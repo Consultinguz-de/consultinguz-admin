@@ -1,5 +1,5 @@
 {
-  "editor.fontFamily": "Cascadia Codes",
+  "editor.fontFamily": "Menlo, Monaco, 'Courier New', monospace",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
   "editor.fontSize": 16
