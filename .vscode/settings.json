@@ -1,0 +1,6 @@
+{
+  "editor.fontFamily": "Cascadia Codes",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.fontSize": 16
+}
