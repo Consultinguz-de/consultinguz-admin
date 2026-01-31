@@ -1,15 +1,21 @@
 "use client";
-
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { VALIDATION_MESSAGES } from "@/constants/messages";
-import { loginSchema, type LoginFormData } from "@/app/login/login.types";
+import { useAuth } from "@/contexts/auth-context";
+import {
+  loginSchema,
+  type LoginFormData,
+} from "@/app/(auth)/login/login.types";
 
 export function LoginForm() {
+  const router = useRouter();
+  const { signIn } = useAuth();
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
@@ -50,8 +56,9 @@ export function LoginForm() {
     setIsLoading(true);
 
     try {
-      // TODO: Firebase auth bilan tekshirish
-      console.log("Email:", formData.email, "Password:", formData.password);
+      await signIn(formData.email, formData.password);
+      toast.success("Muvaffaqiyatli kirdingiz!");
+      router.push("/");
     } catch (error) {
       console.error("Login error:", error);
       toast.error(VALIDATION_MESSAGES.LOGIN_ERROR);
