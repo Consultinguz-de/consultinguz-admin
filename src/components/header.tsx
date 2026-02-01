@@ -42,7 +42,7 @@ const NAV_ITEMS: NavItem[] = [
     href: "/settings",
     label: "Sozlamalar",
     icon: Settings,
-    roles: ["super_admin", "admin"],
+    roles: ["super_admin", "admin", "limited_admin"],
   },
   {
     href: "/candidates",
