@@ -2,9 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
-import { Moon, Sun, Monitor } from "lucide-react";
+import { Moon, Sun, Monitor, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type Theme = "light" | "dark" | "system";
 
@@ -22,44 +27,41 @@ export function ThemeToggle() {
     setMounted(true);
   }, []);
 
+  const currentTheme =
+    THEME_OPTIONS.find((t) => t.value === theme) || THEME_OPTIONS[0];
+  const CurrentIcon = currentTheme.icon;
+
   if (!mounted) {
     return (
-      <div className="flex items-center rounded-md border border-border p-1">
-        {THEME_OPTIONS.map(({ value, icon: Icon, label }) => (
-          <Button
-            key={value}
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 text-muted-foreground"
-            disabled
-          >
-            <Icon className="h-4 w-4" />
-            <span className="sr-only">{label}</span>
-          </Button>
-        ))}
-      </div>
+      <Button variant="ghost" size="icon" className="h-8 w-8" disabled>
+        <Sun className="h-4 w-4" />
+      </Button>
     );
   }
 
   return (
-    <div className="flex items-center rounded-md border border-border p-1">
-      {THEME_OPTIONS.map(({ value, icon: Icon, label }) => (
-        <Button
-          key={value}
-          variant="ghost"
-          size="icon"
-          onClick={() => setTheme(value)}
-          className={cn(
-            "h-7 w-7",
-            theme === value
-              ? "bg-accent text-foreground"
-              : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          <Icon className="h-4 w-4" />
-          <span className="sr-only">{label}</span>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8">
+          <CurrentIcon className="h-4 w-4" />
+          <span className="sr-only">Mavzuni o'zgartirish</span>
         </Button>
-      ))}
-    </div>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {THEME_OPTIONS.map(({ value, icon: Icon, label }) => (
+          <DropdownMenuItem
+            key={value}
+            onClick={() => setTheme(value)}
+            className="flex items-center justify-between"
+          >
+            <div className="flex items-center gap-2">
+              <Icon className="h-4 w-4" />
+              {label}
+            </div>
+            {theme === value && <Check className="h-4 w-4" />}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
