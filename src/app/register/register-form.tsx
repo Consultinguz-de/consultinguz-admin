@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,19 +11,20 @@ import {
   DocumentsStep,
   ConfirmationStep,
 } from "./steps";
+import { useRegister, STEPS } from "./register-context";
 
-const STEPS = [
-  { id: 1, title: "Shaxsiy ma'lumotlar", component: PersonalInfoStep },
-  { id: 2, title: "Ish tajribasi", component: WorkExperienceStep },
-  { id: 3, title: "Ta'lim", component: EducationStep },
-  { id: 4, title: "Til bilish darajasi", component: LanguageSkillsStep },
-  { id: 5, title: "Qobilyatlar", component: SkillsStep },
-  { id: 6, title: "Xujjatlar", component: DocumentsStep },
-  { id: 7, title: "Tasdiqlash", component: ConfirmationStep },
+const STEP_COMPONENTS = [
+  PersonalInfoStep,
+  WorkExperienceStep,
+  EducationStep,
+  LanguageSkillsStep,
+  SkillsStep,
+  DocumentsStep,
+  ConfirmationStep,
 ];
 
 export function RegisterForm() {
-  const [currentStep, setCurrentStep] = useState(1);
+  const { currentStep, setCurrentStep } = useRegister();
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
   useEffect(() => {
@@ -66,9 +67,8 @@ export function RegisterForm() {
   };
 
   const renderStepContent = () => {
-    const step = STEPS.find((s) => s.id === currentStep);
-    if (!step) return null;
-    const StepComponent = step.component;
+    const StepComponent = STEP_COMPONENTS[currentStep - 1];
+    if (!StepComponent) return null;
     return <StepComponent />;
   };
 
