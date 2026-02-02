@@ -1,7 +1,11 @@
 import { Home, Settings, Users } from "lucide-react";
 import type { NavItem } from "./types";
 
-export const HIDDEN_ROUTES = ["/login", "/register-condidates"] as const;
+export const HIDDEN_ROUTES = [
+  "/login",
+  "/register-condidates",
+  "/register",
+] as const;
 
 export const NAV_ITEMS: NavItem[] = [
   {

@@ -1,0 +1,141 @@
+"use client";
+import { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  PersonalInfoStep,
+  WorkExperienceStep,
+  EducationStep,
+  LanguageSkillsStep,
+  SkillsStep,
+  DocumentsStep,
+  ConfirmationStep,
+} from "./steps";
+
+const STEPS = [
+  { id: 1, title: "Shaxsiy ma'lumotlar", component: PersonalInfoStep },
+  { id: 2, title: "Ish tajribasi", component: WorkExperienceStep },
+  { id: 3, title: "Ta'lim", component: EducationStep },
+  { id: 4, title: "Til bilish darajasi", component: LanguageSkillsStep },
+  { id: 5, title: "Qobilyatlar", component: SkillsStep },
+  { id: 6, title: "Xujjatlar", component: DocumentsStep },
+  { id: 7, title: "Tasdiqlash", component: ConfirmationStep },
+];
+
+export function RegisterForm() {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+
+  useEffect(() => {
+    const handleFocus = () => setIsKeyboardOpen(true);
+    const handleBlur = () => setIsKeyboardOpen(false);
+
+    document.addEventListener("focusin", (e) => {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) {
+        handleFocus();
+      }
+    });
+    document.addEventListener("focusout", (e) => {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) {
+        handleBlur();
+      }
+    });
+
+    return () => {
+      document.removeEventListener("focusin", handleFocus);
+      document.removeEventListener("focusout", handleBlur);
+    };
+  }, []);
+
+  const handleNext = () => {
+    if (currentStep < STEPS.length) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const renderStepContent = () => {
+    const step = STEPS.find((s) => s.id === currentStep);
+    if (!step) return null;
+    const StepComponent = step.component;
+    return <StepComponent />;
+  };
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Step Content */}
+      <div className="flex-1 overflow-y-auto min-h-0">
+        {renderStepContent()}
+      </div>
+
+      {/* Done Button - shown when keyboard is open */}
+      {isKeyboardOpen && (
+        <div className="shrink-0 border-t pt-2 mt-2 bg-card md:hidden">
+          <Button
+            type="button"
+            size="sm"
+            className="w-full"
+            onClick={() => {
+              if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+              }
+            }}
+          >
+            <Check className="w-4 h-4 mr-2" />
+            Tayyor
+          </Button>
+        </div>
+      )}
+
+      {/* Sticky Footer */}
+      <div
+        className={`shrink-0 border-t pt-2 md:pt-4 mt-2 md:mt-4 bg-card transition-all duration-200 ${isKeyboardOpen ? "hidden md:block" : ""}`}
+      >
+        {/* Progress Bar */}
+        <div className="h-1 bg-muted rounded-full mb-2 md:mb-4">
+          <div
+            className="h-full bg-primary rounded-full transition-all duration-300"
+            style={{ width: `${(currentStep / STEPS.length) * 100}%` }}
+          />
+        </div>
+        <div className="flex items-center justify-between">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleBack}
+            disabled={currentStep === 1}
+            className="text-xs md:text-sm"
+          >
+            <ChevronLeft className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+            <span className="hidden sm:inline">Orqaga</span>
+          </Button>
+          <span className="text-xs md:text-sm text-muted-foreground">
+            {currentStep} / {STEPS.length}
+          </span>
+          <Button
+            type="button"
+            size="sm"
+            onClick={handleNext}
+            disabled={currentStep === STEPS.length}
+            className="text-xs md:text-sm"
+          >
+            <span className="hidden sm:inline">Oldinga</span>
+            <ChevronRight className="w-3 h-3 md:w-4 md:h-4 ml-1" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
