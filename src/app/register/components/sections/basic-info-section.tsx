@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { FormField } from "../form-field";
 import { FormRadio } from "../form-radio";
 import { FormSelect } from "../form-select";
 import { DatePicker } from "../date-picker";
 import { RegionPicker } from "../region-picker";
-import { type RegionValue } from "@/constants/regions";
+import { useRegister, type PersonalInfo } from "../../register-context";
 
 const GENDER_OPTIONS = [
   { value: "male", label: "Erkak" },
@@ -21,31 +20,76 @@ const MARITAL_STATUS_OPTIONS = [
 ];
 
 export function BasicInfoSection() {
-  const [birthDate, setBirthDate] = useState<Date>();
-  const [birthPlace, setBirthPlace] = useState<RegionValue>();
+  const { formData, updateFormData, errors, clearFieldError } = useRegister();
+  const personalInfo = formData.personalInfo;
+
+  const updatePersonalInfo = (
+    field: keyof PersonalInfo,
+    value: PersonalInfo[keyof PersonalInfo],
+  ) => {
+    updateFormData("personalInfo", { ...personalInfo, [field]: value });
+  };
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField id="firstName" label="Ism" placeholder="Ismingiz" />
-        <FormField id="lastName" label="Familya" placeholder="Familyangiz" />
+        <FormField
+          id="firstName"
+          label="Ism"
+          placeholder="Ismingiz"
+          value={personalInfo.firstName}
+          onChange={(value) => updatePersonalInfo("firstName", value)}
+          error={errors.firstName}
+          onClearError={() => clearFieldError("firstName")}
+        />
+        <FormField
+          id="lastName"
+          label="Familya"
+          placeholder="Familyangiz"
+          value={personalInfo.lastName}
+          onChange={(value) => updatePersonalInfo("lastName", value)}
+          error={errors.lastName}
+          onClearError={() => clearFieldError("lastName")}
+        />
       </div>
 
-      <FormRadio label="Jins" options={GENDER_OPTIONS} defaultValue="male" />
+      <FormRadio
+        id="gender"
+        label="Jins"
+        options={GENDER_OPTIONS}
+        value={personalInfo.gender}
+        onValueChange={(value) => updatePersonalInfo("gender", value)}
+        error={errors.gender}
+        onClearError={() => clearFieldError("gender")}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <DatePicker
+          id="birthDate"
           label="Tug'ilgan sana"
-          value={birthDate}
-          onChange={setBirthDate}
+          value={personalInfo.birthDate}
+          onChange={(value) => updatePersonalInfo("birthDate", value)}
+          error={errors.birthDate}
+          onClearError={() => clearFieldError("birthDate")}
         />
         <RegionPicker
+          id="birthPlace"
           label="Tug'ilgan joy"
-          value={birthPlace}
-          onValueChange={setBirthPlace}
+          value={personalInfo.birthPlace}
+          onValueChange={(value) => updatePersonalInfo("birthPlace", value)}
           placeholder="Tug'ilgan joyni tanlang"
+          error={errors.birthPlace}
+          onClearError={() => clearFieldError("birthPlace")}
         />
-        <FormSelect label="Oilaviy holati" options={MARITAL_STATUS_OPTIONS} />
+        <FormSelect
+          id="maritalStatus"
+          label="Oilaviy holati"
+          options={MARITAL_STATUS_OPTIONS}
+          value={personalInfo.maritalStatus}
+          onValueChange={(value) => updatePersonalInfo("maritalStatus", value)}
+          error={errors.maritalStatus}
+          onClearError={() => clearFieldError("maritalStatus")}
+        />
       </div>
     </div>
   );

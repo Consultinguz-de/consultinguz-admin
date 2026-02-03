@@ -21,21 +21,27 @@ import {
 } from "@/components/ui/drawer";
 
 interface DatePickerProps {
+  id?: string;
   label: string;
   placeholder?: string;
   value?: Date;
   onChange?: (date: Date | undefined) => void;
   fromYear?: number;
   toYear?: number;
+  error?: string;
+  onClearError?: () => void;
 }
 
 export function DatePicker({
+  id,
   label,
   placeholder = "Sanani tanlang",
   value,
   onChange,
   fromYear = 1940,
   toYear = new Date().getFullYear(),
+  error,
+  onClearError,
 }: DatePickerProps) {
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -61,28 +67,32 @@ export function DatePicker({
   };
 
   const handleSelectDesktop = (date: Date | undefined) => {
+    if (error) onClearError?.();
     onChange?.(date);
     setPopoverOpen(false);
   };
 
   const handleSelectMobile = (date: Date | undefined) => {
+    if (error) onClearError?.();
     onChange?.(date);
     setDrawerOpen(false);
   };
 
   return (
     <div className="space-y-2" ref={containerRef}>
-      <Label>{label}</Label>
+      <Label className={error ? "text-destructive" : ""}>{label}</Label>
 
       {/* Desktop: Popover */}
       <div className="hidden md:block">
         <Popover open={popoverOpen} onOpenChange={handlePopoverOpenChange}>
           <PopoverTrigger asChild>
             <Button
+              id={id}
               variant="outline"
               className={cn(
                 "w-full justify-start text-left font-normal",
                 !value && "text-muted-foreground",
+                error && "border-destructive",
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
@@ -108,10 +118,12 @@ export function DatePicker({
         <Drawer open={drawerOpen} onOpenChange={handleDrawerOpenChange}>
           <DrawerTrigger asChild>
             <Button
+              id={id}
               variant="outline"
               className={cn(
                 "w-full justify-start text-left font-normal",
                 !value && "text-muted-foreground",
+                error && "border-destructive",
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
@@ -135,6 +147,7 @@ export function DatePicker({
           </DrawerContent>
         </Drawer>
       </div>
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
 }

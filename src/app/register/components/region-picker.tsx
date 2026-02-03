@@ -23,17 +23,23 @@ import {
 import { UZBEKISTAN_REGIONS, type RegionValue } from "@/constants/regions";
 
 interface RegionPickerProps {
+  id?: string;
   label?: string;
   value?: RegionValue;
   onValueChange?: (value: RegionValue) => void;
   placeholder?: string;
+  error?: string;
+  onClearError?: () => void;
 }
 
 export function RegionPicker({
+  id,
   label = "Viloyat",
   value,
   onValueChange,
   placeholder = "Viloyatni tanlang",
+  error,
+  onClearError,
 }: RegionPickerProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -59,22 +65,29 @@ export function RegionPicker({
   };
 
   const handleDrawerSelect = (regionValue: RegionValue) => {
+    if (error) onClearError?.();
     onValueChange?.(regionValue);
     setDrawerOpen(false);
   };
 
   return (
     <div className="space-y-2" ref={containerRef}>
-      <Label>{label}</Label>
+      <Label className={error ? "text-destructive" : ""}>{label}</Label>
 
       {/* Desktop: Select */}
       <div className="hidden md:block">
         <Select
           value={value}
-          onValueChange={(v) => onValueChange?.(v as RegionValue)}
+          onValueChange={(v) => {
+            if (error) onClearError?.();
+            onValueChange?.(v as RegionValue);
+          }}
           onOpenChange={handleSelectOpenChange}
         >
-          <SelectTrigger>
+          <SelectTrigger
+            id={id}
+            className={error ? "border-destructive focus:ring-destructive" : ""}
+          >
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
           <SelectContent>
@@ -92,8 +105,12 @@ export function RegionPicker({
         <Drawer open={drawerOpen} onOpenChange={handleDrawerOpenChange}>
           <DrawerTrigger asChild>
             <Button
+              id={id}
               variant="outline"
-              className="w-full justify-between font-normal"
+              className={cn(
+                "w-full justify-between font-normal",
+                error && "border-destructive",
+              )}
             >
               {selectedRegion?.label || placeholder}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -128,6 +145,7 @@ export function RegionPicker({
           </DrawerContent>
         </Drawer>
       </div>
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
 }

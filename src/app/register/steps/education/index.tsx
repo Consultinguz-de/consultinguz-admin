@@ -3,14 +3,12 @@
 import { useState } from "react";
 import { SchoolSection } from "./school-section";
 import { OptionalSection } from "./optional-section";
-import { EducationData, EducationState, initialEducationData } from "./types";
+import { EducationData } from "./types";
+import { useRegister, type Education } from "../../register-context";
 
 export function EducationStep() {
-  const [education, setEducation] = useState<EducationState>({
-    school: { ...initialEducationData },
-    college: { ...initialEducationData },
-    university: { ...initialEducationData },
-  });
+  const { formData, updateFormData, errors, clearFieldError } = useRegister();
+  const education = formData.education;
 
   const [openSections, setOpenSections] = useState({
     school: true,
@@ -19,17 +17,17 @@ export function EducationStep() {
   });
 
   const updateEducation = (
-    type: keyof EducationState,
+    type: keyof Education,
     field: keyof EducationData,
     value: string | boolean | Date | File | undefined,
   ) => {
-    setEducation((prev) => ({
-      ...prev,
+    updateFormData("education", {
+      ...education,
       [type]: {
-        ...prev[type],
+        ...education[type],
         [field]: value,
       },
-    }));
+    });
   };
 
   const toggleSection = (type: keyof typeof openSections) => {
@@ -52,6 +50,8 @@ export function EducationStep() {
           isOpen={openSections.school}
           onToggle={() => toggleSection("school")}
           onUpdate={(field, value) => updateEducation("school", field, value)}
+          errors={errors}
+          onClearError={clearFieldError}
         />
         <OptionalSection
           type="college"
@@ -63,6 +63,8 @@ export function EducationStep() {
             setOpenSections((prev) => ({ ...prev, college: false }))
           }
           onUpdate={(field, value) => updateEducation("college", field, value)}
+          errors={errors}
+          onClearError={clearFieldError}
         />
         <OptionalSection
           type="university"
@@ -76,6 +78,8 @@ export function EducationStep() {
           onUpdate={(field, value) =>
             updateEducation("university", field, value)
           }
+          errors={errors}
+          onClearError={clearFieldError}
         />
       </div>
     </div>

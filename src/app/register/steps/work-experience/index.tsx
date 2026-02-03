@@ -5,10 +5,16 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ExperienceItem } from "./experience-item";
 import { WorkExperience } from "./types";
+import { useRegister } from "../../register-context";
 
 export function WorkExperienceStep() {
-  const [experiences, setExperiences] = useState<WorkExperience[]>([]);
+  const { formData, updateFormData } = useRegister();
+  const experiences = formData.workExperience;
   const [openItems, setOpenItems] = useState<string[]>([]);
+
+  const setExperiences = (newExperiences: WorkExperience[]) => {
+    updateFormData("workExperience", newExperiences);
+  };
 
   const addExperience = () => {
     const newId = Date.now().toString();
@@ -32,12 +38,12 @@ export function WorkExperienceStep() {
   const updateExperience = (
     id: string,
     field: keyof WorkExperience,
-    value: unknown
+    value: unknown,
   ) => {
     setExperiences(
       experiences.map((exp) =>
-        exp.id === id ? { ...exp, [field]: value } : exp
-      )
+        exp.id === id ? { ...exp, [field]: value } : exp,
+      ),
     );
   };
 
@@ -48,10 +54,13 @@ export function WorkExperienceStep() {
         exp.id === id
           ? {
               ...exp,
-              responsibilities: [...exp.responsibilities, responsibility.trim()],
+              responsibilities: [
+                ...exp.responsibilities,
+                responsibility.trim(),
+              ],
             }
-          : exp
-      )
+          : exp,
+      ),
     );
   };
 
@@ -61,10 +70,12 @@ export function WorkExperienceStep() {
         exp.id === expId
           ? {
               ...exp,
-              responsibilities: exp.responsibilities.filter((_, i) => i !== index),
+              responsibilities: exp.responsibilities.filter(
+                (_, i) => i !== index,
+              ),
             }
-          : exp
-      )
+          : exp,
+      ),
     );
   };
 
@@ -72,7 +83,7 @@ export function WorkExperienceStep() {
     setOpenItems(
       openItems.includes(id)
         ? openItems.filter((item) => item !== id)
-        : [...openItems, id]
+        : [...openItems, id],
     );
   };
 

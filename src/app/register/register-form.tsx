@@ -24,7 +24,8 @@ const STEP_COMPONENTS = [
 ];
 
 export function RegisterForm() {
-  const { currentStep, setCurrentStep } = useRegister();
+  const { currentStep, setCurrentStep, validateCurrentStep, clearAllErrors } =
+    useRegister();
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
   useEffect(() => {
@@ -59,7 +60,10 @@ export function RegisterForm() {
 
   const handleNext = () => {
     if (currentStep < STEPS.length) {
-      setCurrentStep(currentStep + 1);
+      if (validateCurrentStep()) {
+        clearAllErrors();
+        setCurrentStep(currentStep + 1);
+      }
     }
   };
 

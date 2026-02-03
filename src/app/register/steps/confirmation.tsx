@@ -1,19 +1,25 @@
 "use client";
 
-import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useState } from "react";
 import { PrivacyPolicyContent } from "./privacy-policy-content";
+import { useRegister } from "../register-context";
 
 export function ConfirmationStep() {
-  const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const { formData, updateFormData, submitForm } = useRegister();
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handlePrivacyChange = (checked: boolean) => {
+    updateFormData("privacyAccepted", checked);
+  };
 
   return (
     <div className="space-y-4">
@@ -22,8 +28,8 @@ export function ConfirmationStep() {
       <div className="flex items-start space-x-3 p-4 border rounded-lg">
         <Checkbox
           id="privacy-policy"
-          checked={privacyAccepted}
-          onCheckedChange={(checked) => setPrivacyAccepted(checked === true)}
+          checked={formData.privacyAccepted}
+          onCheckedChange={(checked) => handlePrivacyChange(checked === true)}
         />
         <Label
           htmlFor="privacy-policy"
@@ -54,6 +60,15 @@ export function ConfirmationStep() {
           <PrivacyPolicyContent />
         </DialogContent>
       </Dialog>
+
+      <Button
+        type="button"
+        className="w-full mt-4"
+        disabled={!formData.privacyAccepted}
+        onClick={submitForm}
+      >
+        Jo'natish
+      </Button>
     </div>
   );
 }
