@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import {
   Card,
   CardContent,
@@ -10,6 +11,11 @@ import { RegisterResult } from "./register-result";
 import { MobileResultFab } from "./mobile-result-fab";
 import { RegisterProvider } from "./register-context";
 import { RegisterHeader } from "./register-header";
+
+export const metadata: Metadata = {
+  title: "Ro'yxatdan o'tish",
+  description: "Consulting Pro - Ro'yxatdan o'tish sahifasi",
+};
 
 export default function RegisterPage() {
   return (

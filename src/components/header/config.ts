@@ -5,6 +5,7 @@ export const HIDDEN_ROUTES = [
   "/login",
   "/register-condidates",
   "/register",
+  "/privacy-policy",
 ] as const;
 
 export const NAV_ITEMS: NavItem[] = [
