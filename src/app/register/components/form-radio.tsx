@@ -10,19 +10,25 @@ interface RadioOption {
 }
 
 interface FormRadioProps {
+  id?: string;
   label: string;
   options: RadioOption[];
   defaultValue?: string;
   value?: string;
   onValueChange?: (value: string) => void;
+  error?: string;
+  onClearError?: () => void;
 }
 
 export function FormRadio({
+  id,
   label,
   options,
   defaultValue,
   value,
   onValueChange,
+  error,
+  onClearError,
 }: FormRadioProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -35,13 +41,19 @@ export function FormRadio({
     }, 100);
   };
 
+  const handleValueChange = (newValue: string) => {
+    if (error) onClearError?.();
+    onValueChange?.(newValue);
+  };
+
   return (
     <div className="space-y-2" ref={containerRef}>
-      <Label>{label}</Label>
+      <Label className={error ? "text-destructive" : ""}>{label}</Label>
       <RadioGroup
+        id={id}
         defaultValue={defaultValue}
         value={value}
-        onValueChange={onValueChange}
+        onValueChange={handleValueChange}
         className="flex gap-4"
         onFocus={handleFocus}
       >
@@ -54,6 +66,7 @@ export function FormRadio({
           </div>
         ))}
       </RadioGroup>
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
 }

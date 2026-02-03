@@ -16,19 +16,25 @@ interface SelectOption {
 }
 
 interface FormSelectProps {
+  id?: string;
   label: string;
   placeholder?: string;
   options: SelectOption[];
   value?: string;
   onValueChange?: (value: string) => void;
+  error?: string;
+  onClearError?: () => void;
 }
 
 export function FormSelect({
+  id,
   label,
   placeholder = "Tanlang",
   options,
   value,
   onValueChange,
+  error,
+  onClearError,
 }: FormSelectProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -45,13 +51,19 @@ export function FormSelect({
 
   return (
     <div className="space-y-2" ref={containerRef}>
-      <Label>{label}</Label>
+      <Label className={error ? "text-destructive" : ""}>{label}</Label>
       <Select
         value={value}
-        onValueChange={onValueChange}
+        onValueChange={(v) => {
+          if (error) onClearError?.();
+          onValueChange?.(v);
+        }}
         onOpenChange={handleOpenChange}
       >
-        <SelectTrigger>
+        <SelectTrigger
+          id={id}
+          className={error ? "border-destructive focus:ring-destructive" : ""}
+        >
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
@@ -62,6 +74,7 @@ export function FormSelect({
           ))}
         </SelectContent>
       </Select>
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
 }

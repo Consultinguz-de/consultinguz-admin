@@ -11,6 +11,8 @@ import {
 import { DatePicker } from "../../components/date-picker";
 import { cn } from "@/lib/utils";
 import { EducationData } from "./types";
+import { Label } from "@/components/ui/label";
+import { type FormErrors } from "../../register-context";
 
 type OptionalType = "college" | "university";
 
@@ -25,6 +27,8 @@ interface OptionalSectionProps {
     field: keyof EducationData,
     value: string | boolean | Date | File | undefined,
   ) => void;
+  errors?: FormErrors;
+  onClearError?: (field: string) => void;
 }
 
 const PLACEHOLDERS: Record<OptionalType, string> = {
@@ -45,7 +49,16 @@ export function OptionalSection({
   onToggle,
   onClose,
   onUpdate,
+  errors = {},
+  onClearError,
 }: OptionalSectionProps) {
+  const handleUpdate = (
+    field: keyof EducationData,
+    value: string | boolean | Date | File | undefined,
+  ) => {
+    if (errors[`${type}_${field}`]) onClearError?.(`${type}_${field}`);
+    onUpdate(field, value);
+  };
   return (
     <Collapsible
       open={isOpen}
@@ -97,43 +110,88 @@ export function OptionalSection({
         >
           <div className="grid grid-cols-2 gap-4">
             <DatePicker
+              id={`${type}_startDate`}
               label="O'qishni boshlagan sana"
               placeholder="Tanlang"
               value={data.startDate}
-              onChange={(date) => onUpdate("startDate", date)}
+              onChange={(date) => handleUpdate("startDate", date)}
               toYear={new Date().getFullYear()}
+              error={errors[`${type}_startDate`]}
+              onClearError={() => onClearError?.(`${type}_startDate`)}
             />
             <DatePicker
+              id={`${type}_endDate`}
               label="O'qishni tugatgan sana"
               placeholder="Tanlang"
               value={data.endDate}
-              onChange={(date) => onUpdate("endDate", date)}
+              onChange={(date) => handleUpdate("endDate", date)}
               toYear={new Date().getFullYear()}
+              error={errors[`${type}_endDate`]}
+              onClearError={() => onClearError?.(`${type}_endDate`)}
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">{LABELS[type]}</label>
+            <Label
+              htmlFor={`${type}_institutionName`}
+              className={
+                errors[`${type}_institutionName`] ? "text-destructive" : ""
+              }
+            >
+              {LABELS[type]}
+            </Label>
             <Input
+              id={`${type}_institutionName`}
               placeholder={PLACEHOLDERS[type]}
               value={data.institutionName}
-              onChange={(e) => onUpdate("institutionName", e.target.value)}
+              onChange={(e) => handleUpdate("institutionName", e.target.value)}
               disabled={!data.enabled}
+              className={
+                errors[`${type}_institutionName`]
+                  ? "border-destructive focus-visible:ring-destructive"
+                  : ""
+              }
             />
+            {errors[`${type}_institutionName`] && (
+              <p className="text-xs text-destructive">
+                {errors[`${type}_institutionName`]}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Yo'nalish nomi</label>
+            <Label
+              htmlFor={`${type}_direction`}
+              className={errors[`${type}_direction`] ? "text-destructive" : ""}
+            >
+              Yo'nalish nomi
+            </Label>
             <Input
+              id={`${type}_direction`}
               placeholder="Qaysi yo'nalishda o'qigansiz"
               value={data.direction}
-              onChange={(e) => onUpdate("direction", e.target.value)}
+              onChange={(e) => handleUpdate("direction", e.target.value)}
               disabled={!data.enabled}
+              className={
+                errors[`${type}_direction`]
+                  ? "border-destructive focus-visible:ring-destructive"
+                  : ""
+              }
             />
+            {errors[`${type}_direction`] && (
+              <p className="text-xs text-destructive">
+                {errors[`${type}_direction`]}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Diplom (PDF)</label>
+            <Label
+              htmlFor={`${type}_document`}
+              className={errors[`${type}_document`] ? "text-destructive" : ""}
+            >
+              Diplom (PDF)
+            </Label>
             {data.document ? (
               <div className="flex items-center gap-2 p-2 border rounded-md bg-muted/50">
                 <span className="text-sm flex-1 truncate">
@@ -150,14 +208,25 @@ export function OptionalSection({
               </div>
             ) : (
               <Input
+                id={`${type}_document`}
                 type="file"
                 accept=".pdf"
                 disabled={!data.enabled}
                 onChange={(e) => {
                   const file = e.target.files?.[0];
-                  onUpdate("document", file);
+                  handleUpdate("document", file);
                 }}
+                className={
+                  errors[`${type}_document`]
+                    ? "border-destructive focus-visible:ring-destructive"
+                    : ""
+                }
               />
+            )}
+            {errors[`${type}_document`] && (
+              <p className="text-xs text-destructive">
+                {errors[`${type}_document`]}
+              </p>
             )}
           </div>
         </div>

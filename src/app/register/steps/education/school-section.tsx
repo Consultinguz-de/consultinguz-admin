@@ -10,6 +10,8 @@ import {
 import { DatePicker } from "../../components/date-picker";
 import { cn } from "@/lib/utils";
 import { EducationData } from "./types";
+import { Label } from "@/components/ui/label";
+import { type FormErrors } from "../../register-context";
 
 interface SchoolSectionProps {
   data: EducationData;
@@ -19,6 +21,8 @@ interface SchoolSectionProps {
     field: keyof EducationData,
     value: string | Date | File | undefined,
   ) => void;
+  errors?: FormErrors;
+  onClearError?: (field: string) => void;
 }
 
 export function SchoolSection({
@@ -26,7 +30,16 @@ export function SchoolSection({
   isOpen,
   onToggle,
   onUpdate,
+  errors = {},
+  onClearError,
 }: SchoolSectionProps) {
+  const handleUpdate = (
+    field: keyof EducationData,
+    value: string | Date | File | undefined,
+  ) => {
+    if (errors[`school_${field}`]) onClearError?.(`school_${field}`);
+    onUpdate(field, value);
+  };
   return (
     <Collapsible
       open={isOpen}
@@ -49,34 +62,61 @@ export function SchoolSection({
         <div className="px-4 pb-4 space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <DatePicker
+              id="school_startDate"
               label="O'qishni boshlagan sana"
               placeholder="Tanlang"
               value={data.startDate}
-              onChange={(date) => onUpdate("startDate", date)}
+              onChange={(date) => handleUpdate("startDate", date)}
               toYear={new Date().getFullYear()}
+              error={errors.school_startDate}
+              onClearError={() => onClearError?.("school_startDate")}
             />
             <DatePicker
+              id="school_endDate"
               label="O'qishni tugatgan sana"
               placeholder="Tanlang"
               value={data.endDate}
-              onChange={(date) => onUpdate("endDate", date)}
+              onChange={(date) => handleUpdate("endDate", date)}
               toYear={new Date().getFullYear()}
+              error={errors.school_endDate}
+              onClearError={() => onClearError?.("school_endDate")}
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Maktab nomi</label>
+            <Label
+              htmlFor="school_institutionName"
+              className={
+                errors.school_institutionName ? "text-destructive" : ""
+              }
+            >
+              Maktab nomi
+            </Label>
             <Input
+              id="school_institutionName"
               placeholder="Masalan: 1-sonli maktab"
               value={data.institutionName}
-              onChange={(e) => onUpdate("institutionName", e.target.value)}
+              onChange={(e) => handleUpdate("institutionName", e.target.value)}
+              className={
+                errors.school_institutionName
+                  ? "border-destructive focus-visible:ring-destructive"
+                  : ""
+              }
             />
+            {errors.school_institutionName && (
+              <p className="text-xs text-destructive">
+                {errors.school_institutionName}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">
+            <Label
+              htmlFor="school_document"
+              className={errors.school_document ? "text-destructive" : ""}
+            >
               Maktab shahodatnomasi (PDF)
-            </label>
+            </Label>
             {data.document ? (
               <div className="flex items-center gap-2 p-2 border rounded-md bg-muted/50">
                 <span className="text-sm flex-1 truncate">
@@ -92,13 +132,24 @@ export function SchoolSection({
               </div>
             ) : (
               <Input
+                id="school_document"
                 type="file"
                 accept=".pdf"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
-                  onUpdate("document", file);
+                  handleUpdate("document", file);
                 }}
+                className={
+                  errors.school_document
+                    ? "border-destructive focus-visible:ring-destructive"
+                    : ""
+                }
               />
+            )}
+            {errors.school_document && (
+              <p className="text-xs text-destructive">
+                {errors.school_document}
+              </p>
             )}
           </div>
         </div>

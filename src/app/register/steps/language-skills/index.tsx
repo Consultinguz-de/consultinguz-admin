@@ -1,26 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SkillItem } from "./skill-item";
-import { LanguageSkill, LANGUAGES, generateId } from "./types";
+import { LANGUAGES, generateId } from "./types";
+import { useRegister, type LanguageSkill } from "../../register-context";
 
 export function LanguageSkillsStep() {
-  const [skills, setSkills] = useState<LanguageSkill[]>([
-    { id: generateId(), language: "", level: "", noCertificate: false },
-  ]);
+  const { formData, updateFormData } = useRegister();
+  const skills = formData.languageSkills;
+
+  useEffect(() => {
+    if (skills.length === 0) {
+      updateFormData("languageSkills", [
+        { id: generateId(), language: "", level: "", noCertificate: false },
+      ]);
+    }
+  }, []);
+
+  const setSkills = (newSkills: LanguageSkill[]) => {
+    updateFormData("languageSkills", newSkills);
+  };
 
   const addSkill = () => {
-    setSkills((prev) => [
-      ...prev,
+    setSkills([
+      ...skills,
       { id: generateId(), language: "", level: "", noCertificate: false },
     ]);
   };
 
   const removeSkill = (id: string) => {
     if (skills.length > 1) {
-      setSkills((prev) => prev.filter((skill) => skill.id !== id));
+      setSkills(skills.filter((skill) => skill.id !== id));
     }
   };
 
@@ -29,8 +41,8 @@ export function LanguageSkillsStep() {
     field: keyof LanguageSkill,
     value: string | File | boolean | undefined,
   ) => {
-    setSkills((prev) =>
-      prev.map((skill) =>
+    setSkills(
+      skills.map((skill) =>
         skill.id === id ? { ...skill, [field]: value } : skill,
       ),
     );

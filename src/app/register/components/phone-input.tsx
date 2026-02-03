@@ -9,6 +9,8 @@ interface PhoneInputProps {
   label?: string;
   value?: string;
   onChange?: (value: string) => void;
+  error?: string;
+  onClearError?: () => void;
 }
 
 export function PhoneInput({
@@ -16,6 +18,8 @@ export function PhoneInput({
   label = "Telefon raqam",
   value = "",
   onChange,
+  error,
+  onClearError,
 }: PhoneInputProps) {
   const [phoneNumber, setPhoneNumber] = useState(value);
   const [isValid, setIsValid] = useState(true);
@@ -23,7 +27,7 @@ export function PhoneInput({
 
   const formatPhoneNumber = (input: string): string => {
     const digits = input.replace(/\D/g, "").slice(0, 9);
-    
+
     if (digits.length <= 2) {
       return digits;
     } else if (digits.length <= 5) {
@@ -41,6 +45,7 @@ export function PhoneInput({
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (error) onClearError?.();
     const formatted = formatPhoneNumber(e.target.value);
     setPhoneNumber(formatted);
     setIsValid(validatePhone(formatted) || formatted.length === 0);
@@ -62,9 +67,13 @@ export function PhoneInput({
     }
   };
 
+  const hasError = error || (!isValid && phoneNumber.length > 0);
+
   return (
     <div className="space-y-2" ref={containerRef}>
-      <Label htmlFor={id}>{label}</Label>
+      <Label htmlFor={id} className={hasError ? "text-destructive" : ""}>
+        {label}
+      </Label>
       <div className="flex">
         <div className="flex items-center justify-center px-3 border border-r-0 rounded-l-md bg-muted text-muted-foreground text-sm">
           +998
@@ -77,12 +86,12 @@ export function PhoneInput({
           onFocus={handleFocus}
           onBlur={handleBlur}
           placeholder="90 123 45 67"
-          className={`rounded-l-none ${!isValid ? "border-destructive focus-visible:ring-destructive" : ""}`}
+          className={`rounded-l-none ${hasError ? "border-destructive focus-visible:ring-destructive" : ""}`}
         />
       </div>
-      {!isValid && phoneNumber.length > 0 && (
+      {hasError && (
         <p className="text-xs text-destructive">
-          Telefon raqam to'liq kiritilmagan
+          {error || "Telefon raqam to'liq kiritilmagan"}
         </p>
       )}
     </div>

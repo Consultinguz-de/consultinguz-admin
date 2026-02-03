@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useRef } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -23,17 +22,23 @@ import {
 import { COUNTRIES, type CountryValue } from "@/constants/countries";
 
 interface CountryPickerProps {
+  id?: string;
   label?: string;
   value?: CountryValue;
   onValueChange?: (value: CountryValue) => void;
   placeholder?: string;
+  error?: string;
+  onClearError?: () => void;
 }
 
 export function CountryPicker({
+  id,
   label = "Davlat",
   value,
   onValueChange,
   placeholder = "Davlatni tanlang",
+  error,
+  onClearError,
 }: CountryPickerProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -59,22 +64,29 @@ export function CountryPicker({
   };
 
   const handleDrawerSelect = (countryValue: CountryValue) => {
+    if (error) onClearError?.();
     onValueChange?.(countryValue);
     setDrawerOpen(false);
   };
 
   return (
     <div className="space-y-2" ref={containerRef}>
-      <Label>{label}</Label>
+      <Label className={error ? "text-destructive" : ""}>{label}</Label>
 
       {/* Desktop: Select */}
       <div className="hidden md:block">
         <Select
           value={value}
-          onValueChange={(v) => onValueChange?.(v as CountryValue)}
+          onValueChange={(v) => {
+            if (error) onClearError?.();
+            onValueChange?.(v as CountryValue);
+          }}
           onOpenChange={handleSelectOpenChange}
         >
-          <SelectTrigger>
+          <SelectTrigger
+            id={id}
+            className={error ? "border-destructive focus:ring-destructive" : ""}
+          >
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
           <SelectContent>
@@ -92,8 +104,12 @@ export function CountryPicker({
         <Drawer open={drawerOpen} onOpenChange={handleDrawerOpenChange}>
           <DrawerTrigger asChild>
             <Button
+              id={id}
               variant="outline"
-              className="w-full justify-between font-normal"
+              className={cn(
+                "w-full justify-between font-normal",
+                error && "border-destructive",
+              )}
             >
               {selectedCountry?.label || placeholder}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -110,14 +126,14 @@ export function CountryPicker({
                     variant="ghost"
                     className={cn(
                       "w-full justify-start font-normal mb-1",
-                      value === country.value && "bg-accent"
+                      value === country.value && "bg-accent",
                     )}
                     onClick={() => handleDrawerSelect(country.value)}
                   >
                     <Check
                       className={cn(
                         "mr-2 h-4 w-4",
-                        value === country.value ? "opacity-100" : "opacity-0"
+                        value === country.value ? "opacity-100" : "opacity-0",
                       )}
                     />
                     {country.label}
@@ -128,6 +144,7 @@ export function CountryPicker({
           </DrawerContent>
         </Drawer>
       </div>
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
 }
