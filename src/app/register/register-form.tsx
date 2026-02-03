@@ -31,26 +31,29 @@ export function RegisterForm() {
     const handleFocus = () => setIsKeyboardOpen(true);
     const handleBlur = () => setIsKeyboardOpen(false);
 
-    document.addEventListener("focusin", (e) => {
+    const handleFocusIn = (e: Event) => {
       if (
         e.target instanceof HTMLInputElement ||
         e.target instanceof HTMLTextAreaElement
       ) {
         handleFocus();
       }
-    });
-    document.addEventListener("focusout", (e) => {
+    };
+    const handleFocusOut = (e: Event) => {
       if (
         e.target instanceof HTMLInputElement ||
         e.target instanceof HTMLTextAreaElement
       ) {
         handleBlur();
       }
-    });
+    };
+
+    document.addEventListener("focusin", handleFocusIn);
+    document.addEventListener("focusout", handleFocusOut);
 
     return () => {
-      document.removeEventListener("focusin", handleFocus);
-      document.removeEventListener("focusout", handleBlur);
+      document.removeEventListener("focusin", handleFocusIn);
+      document.removeEventListener("focusout", handleFocusOut);
     };
   }, []);
 
