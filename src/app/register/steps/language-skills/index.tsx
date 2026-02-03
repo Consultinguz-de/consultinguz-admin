@@ -8,7 +8,7 @@ import { LANGUAGES, generateId } from "./types";
 import { useRegister, type LanguageSkill } from "../../register-context";
 
 export function LanguageSkillsStep() {
-  const { formData, updateFormData } = useRegister();
+  const { formData, updateFormData, errors, clearFieldError } = useRegister();
   const skills = formData.languageSkills;
 
   useEffect(() => {
@@ -41,10 +41,59 @@ export function LanguageSkillsStep() {
     field: keyof LanguageSkill,
     value: string | File | boolean | undefined,
   ) => {
+    const errorKey = `language_${id}_${field}`;
+    if (errors[errorKey]) {
+      clearFieldError(errorKey);
+    }
+    if (field === "certificate" || field === "noCertificate") {
+      const certificateErrorKey = `language_${id}_certificate`;
+      if (errors[certificateErrorKey]) {
+        clearFieldError(certificateErrorKey);
+      }
+    }
+    if (field === "level") {
+      const levelErrorKey = `language_${id}_level`;
+      if (errors[levelErrorKey]) {
+        clearFieldError(levelErrorKey);
+      }
+    }
+    if (field === "language") {
+      const languageErrorKey = `language_${id}_language`;
+      if (errors[languageErrorKey]) {
+        clearFieldError(languageErrorKey);
+      }
+      const certificateErrorKey = `language_${id}_certificate`;
+      if (errors[certificateErrorKey]) {
+        clearFieldError(certificateErrorKey);
+      }
+    }
+    if (field === "language" && (value as string) !== "german") {
+      const levelErrorKey = `language_${id}_level`;
+      if (errors[levelErrorKey]) {
+        clearFieldError(levelErrorKey);
+      }
+    }
     setSkills(
-      skills.map((skill) =>
-        skill.id === id ? { ...skill, [field]: value } : skill,
-      ),
+      skills.map((skill) => {
+        if (skill.id !== id) return skill;
+        if (field === "language") {
+          const languageValue = value as string;
+          const requiresCertificate =
+            languageValue === "german" || languageValue === "english";
+          return requiresCertificate
+            ? { ...skill, language: languageValue }
+            : {
+                ...skill,
+                language: languageValue,
+                noCertificate: false,
+                certificate: undefined,
+              };
+        }
+        if (field === "noCertificate" && value === true) {
+          return { ...skill, noCertificate: true, certificate: undefined };
+        }
+        return { ...skill, [field]: value };
+      }),
     );
   };
 
@@ -66,6 +115,7 @@ export function LanguageSkillsStep() {
           availableLanguages={getAvailableLanguages(skill.id)}
           onRemove={() => removeSkill(skill.id)}
           onUpdate={(field, value) => updateSkill(skill.id, field, value)}
+          errors={errors}
         />
       ))}
 

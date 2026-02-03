@@ -22,31 +22,42 @@ import {
 import { SelectOption } from "./types";
 
 interface ResponsiveSelectProps {
+  id?: string;
   label: string;
   placeholder: string;
   options: SelectOption[];
   value: string;
   onChange: (value: string) => void;
+  error?: string;
 }
 
 export function ResponsiveSelect({
+  id,
   label,
   placeholder,
   options,
   value,
   onChange,
+  error,
 }: ResponsiveSelectProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const selectedOption = options.find((opt) => opt.value === value);
 
   return (
     <div className="space-y-2 w-full">
-      <Label>{label}</Label>
+      <Label className={error ? "text-destructive" : ""}>{label}</Label>
 
       {/* Desktop: Select */}
       <div className="hidden md:block w-full">
         <Select value={value} onValueChange={onChange}>
-          <SelectTrigger className="w-full">
+          <SelectTrigger
+            id={id}
+            className={
+              error
+                ? "w-full border-destructive focus-visible:ring-destructive"
+                : "w-full"
+            }
+          >
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
           <SelectContent>
@@ -64,8 +75,13 @@ export function ResponsiveSelect({
         <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
           <DrawerTrigger asChild>
             <Button
+              id={id}
               variant="outline"
-              className="w-full justify-between font-normal"
+              className={
+                error
+                  ? "w-full justify-between font-normal border-destructive focus-visible:ring-destructive"
+                  : "w-full justify-between font-normal"
+              }
             >
               <span className={!value ? "text-muted-foreground" : ""}>
                 {selectedOption?.label || placeholder}
@@ -96,6 +112,8 @@ export function ResponsiveSelect({
           </DrawerContent>
         </Drawer>
       </div>
+
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
 }

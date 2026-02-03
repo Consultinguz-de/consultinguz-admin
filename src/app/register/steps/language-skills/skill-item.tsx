@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ResponsiveSelect } from "./responsive-select";
+import { type FormErrors } from "../../register-context";
 import { LanguageSkill, SelectOption, LEVELS } from "./types";
 
 interface SkillItemProps {
@@ -18,6 +19,7 @@ interface SkillItemProps {
     field: keyof LanguageSkill,
     value: string | File | boolean | undefined
   ) => void;
+  errors?: FormErrors;
 }
 
 export function SkillItem({
@@ -27,7 +29,14 @@ export function SkillItem({
   availableLanguages,
   onRemove,
   onUpdate,
+  errors = {},
 }: SkillItemProps) {
+  const languageError = errors[`language_${skill.id}_language`];
+  const levelError = errors[`language_${skill.id}_level`];
+  const certificateError = errors[`language_${skill.id}_certificate`];
+  const showsCertificate =
+    skill.language === "german" || skill.language === "english";
+
   return (
     <div className="border rounded-lg p-4 space-y-4">
       <div className="flex items-center justify-between">
@@ -46,70 +55,83 @@ export function SkillItem({
 
       <div className="grid grid-cols-2 gap-4 w-full">
         <ResponsiveSelect
+          id={`language_${skill.id}_language`}
           label="Til"
           placeholder="Tilni tanlang"
           options={availableLanguages}
           value={skill.language}
           onChange={(value) => onUpdate("language", value)}
+          error={languageError}
         />
         <ResponsiveSelect
+          id={`language_${skill.id}_level`}
           label="Daraja"
           placeholder="Darajani tanlang"
           options={LEVELS}
           value={skill.level}
           onChange={(value) => onUpdate("level", value)}
+          error={levelError}
         />
       </div>
 
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id={`no-cert-${skill.id}`}
-            checked={skill.noCertificate}
-            onCheckedChange={(checked) => {
-              onUpdate("noCertificate", checked as boolean);
-              if (checked) {
-                onUpdate("certificate", undefined);
-              }
-            }}
-          />
-          <Label
-            htmlFor={`no-cert-${skill.id}`}
-            className="text-sm font-normal cursor-pointer"
-          >
-            Til sertifikati yo'q
-          </Label>
-        </div>
-
-        {!skill.noCertificate && (
-          <div className="space-y-2">
-            <Label>Til sertifikati (PDF)</Label>
-            {skill.certificate ? (
-              <div className="flex items-center gap-2 p-2 border rounded-md bg-muted/50">
-                <span className="text-sm flex-1 truncate">
-                  {skill.certificate.name}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => onUpdate("certificate", undefined)}
-                  className="p-1 hover:bg-destructive/10 rounded text-destructive"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            ) : (
-              <Input
-                type="file"
-                accept=".pdf"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) onUpdate("certificate", file);
-                }}
-              />
-            )}
+      {showsCertificate && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id={`no-cert-${skill.id}`}
+              checked={skill.noCertificate}
+              onCheckedChange={(checked) => {
+                onUpdate("noCertificate", checked as boolean);
+              }}
+            />
+            <Label
+              htmlFor={`no-cert-${skill.id}`}
+              className="text-sm font-normal cursor-pointer"
+            >
+              Til sertifikati yo'q
+            </Label>
           </div>
-        )}
-      </div>
+
+          {!skill.noCertificate && (
+            <div className="space-y-2">
+              <Label className={certificateError ? "text-destructive" : ""}>
+                Til sertifikati (PDF)
+              </Label>
+              {skill.certificate ? (
+                <div className="flex items-center gap-2 p-2 border rounded-md bg-muted/50">
+                  <span className="text-sm flex-1 truncate">
+                    {skill.certificate.name}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => onUpdate("certificate", undefined)}
+                    className="p-1 hover:bg-destructive/10 rounded text-destructive"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <Input
+                  type="file"
+                  accept=".pdf"
+                  className={
+                    certificateError
+                      ? "border-destructive focus-visible:ring-destructive"
+                      : ""
+                  }
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) onUpdate("certificate", file);
+                  }}
+                />
+              )}
+              {certificateError && (
+                <p className="text-xs text-destructive">{certificateError}</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
