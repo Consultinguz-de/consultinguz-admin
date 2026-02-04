@@ -6,6 +6,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TurnstileWidget } from "@/components/turnstile-widget";
 import { VALIDATION_MESSAGES } from "@/constants/messages";
 import { useAuth } from "@/contexts/auth-context";
 import {
@@ -13,7 +14,11 @@ import {
   type LoginFormData,
 } from "@/app/(auth)/login/login.types";
 
-export function LoginForm() {
+interface LoginFormProps {
+  turnstileSiteKey: string;
+}
+
+export function LoginForm({ turnstileSiteKey }: LoginFormProps) {
   const router = useRouter();
   const { signIn } = useAuth();
   const [formData, setFormData] = useState<LoginFormData>({
@@ -22,6 +27,7 @@ export function LoginForm() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const handleInputChange = (field: keyof LoginFormData) => {
     return (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,11 +57,30 @@ export function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!turnstileToken) {
+      toast.error("Tasdiqlash kerak", {
+        description: "Iltimos, Turnstile tekshiruvdan o'ting.",
+      });
+      return;
+    }
+
     if (!validateForm()) return;
 
     setIsLoading(true);
 
     try {
+      const verifyResponse = await fetch("/api/turnstile/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: turnstileToken }),
+      });
+      if (!verifyResponse.ok) {
+        toast.error("Turnstile tasdiqlanmadi", {
+          description: "Iltimos, qayta urinib ko'ring.",
+        });
+        return;
+      }
+
       await signIn(formData.email, formData.password);
       toast.success("Muvaffaqiyatli kirdingiz!");
       router.push("/");
@@ -102,6 +127,13 @@ export function LoginForm() {
           </button>
         </div>
       </div>
+      <TurnstileWidget
+        siteKey={turnstileSiteKey}
+        onVerify={(token) => setTurnstileToken(token)}
+        onExpire={() => setTurnstileToken(null)}
+        onError={() => setTurnstileToken(null)}
+        className="flex justify-center"
+      />
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? "Yuklanmoqda..." : "Kirish"}
       </Button>

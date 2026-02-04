@@ -19,6 +19,7 @@ export const initialFormData: FormData = {
     phone: "",
     email: "",
     passport: "",
+    passportFile: undefined,
     photo: undefined,
     street: "",
     houseNumber: "",
@@ -33,7 +34,6 @@ export const initialFormData: FormData = {
   },
   languageSkills: [],
   skills: [],
-  documents: [],
   privacyAccepted: false,
 };
 
@@ -64,9 +64,8 @@ export const STEPS: Step[] = [
     title: "Qobilyatlar",
     description: "Texnik va boshqa ko'nikmalaringizni kiriting",
   },
-  { id: 6, title: "Xujjatlar", description: "Kerakli hujjatlarni yuklang" },
   {
-    id: 7,
+    id: 6,
     title: "Tasdiqlash",
     description: "Barcha ma'lumotlarni tekshirib, tasdiqlang",
   },
