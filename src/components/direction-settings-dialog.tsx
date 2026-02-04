@@ -1,13 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Settings,
-  Link,
-  MessageSquare,
-  MessageCirclePlus,
-  Briefcase,
-} from "lucide-react";
+import { Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,40 +11,46 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Direction } from "@/types/direction";
 import { cn } from "@/lib/utils";
+import { tabs, TabType } from "./direction-settings/tabs-config";
+import { LinksTab } from "./direction-settings/links-tab";
+import { DeleteTab } from "./direction-settings/delete-tab";
 
 interface DirectionSettingsDialogProps {
   direction: Direction;
 }
 
-type TabType = "links" | "internal-chat" | "additional-chat" | "employer-chat";
-
-const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
-  { id: "links", label: "Linklar", icon: <Link className="h-4 w-4" /> },
-  {
-    id: "internal-chat",
-    label: "Ichki suhbat",
-    icon: <MessageSquare className="h-4 w-4" />,
-  },
-  {
-    id: "additional-chat",
-    label: "Qo'shimcha suhbat",
-    icon: <MessageCirclePlus className="h-4 w-4" />,
-  },
-  {
-    id: "employer-chat",
-    label: "Ish beruvchi suhbati",
-    icon: <Briefcase className="h-4 w-4" />,
-  },
-];
+const PlaceholderTab = ({ title }: { title: string }) => (
+  <div className="space-y-4">
+    <h3 className="text-lg font-semibold">{title}</h3>
+    <p className="text-sm text-muted-foreground">
+      {title} sozlamalari bu yerda joylashgan.
+    </p>
+  </div>
+);
 
 export function DirectionSettingsDialog({
   direction,
 }: DirectionSettingsDialogProps) {
   const [activeTab, setActiveTab] = useState<TabType>("links");
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "links":
+        return <LinksTab direction={direction} />;
+      case "internal-chat":
+        return <PlaceholderTab title="Ichki suhbat" />;
+      case "additional-chat":
+        return <PlaceholderTab title="Qo'shimcha suhbat" />;
+      case "employer-chat":
+        return <PlaceholderTab title="Ish beruvchi suhbati" />;
+      case "delete":
+        return <DeleteTab direction={direction} />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <Dialog>
@@ -95,63 +95,12 @@ export function DirectionSettingsDialog({
 
           {/* Content */}
           <div className="flex-1 overflow-auto p-6">
-            {activeTab === "links" && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Linklar</h3>
-                <p className="text-sm text-muted-foreground">
-                  Bu yerda yo'nalish uchun linklar sozlanadi.
-                </p>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor={`title-${direction.id}`}>
-                      Yo'nalish nomi
-                    </Label>
-                    <Input
-                      id={`title-${direction.id}`}
-                      defaultValue={direction.title}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor={`slug-${direction.id}`}>Slug</Label>
-                    <Input
-                      id={`slug-${direction.id}`}
-                      defaultValue={direction.slug}
-                    />
-                  </div>
-                </div>
+            {renderTabContent()}
+            {activeTab !== "delete" && (
+              <div className="mt-6 flex justify-end">
+                <Button>Saqlash</Button>
               </div>
             )}
-
-            {activeTab === "internal-chat" && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Ichki suhbat</h3>
-                <p className="text-sm text-muted-foreground">
-                  Ichki suhbat sozlamalari bu yerda joylashgan.
-                </p>
-              </div>
-            )}
-
-            {activeTab === "additional-chat" && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Qo'shimcha suhbat</h3>
-                <p className="text-sm text-muted-foreground">
-                  Qo'shimcha suhbat sozlamalari bu yerda joylashgan.
-                </p>
-              </div>
-            )}
-
-            {activeTab === "employer-chat" && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Ish beruvchi suhbati</h3>
-                <p className="text-sm text-muted-foreground">
-                  Ish beruvchi suhbati sozlamalari bu yerda joylashgan.
-                </p>
-              </div>
-            )}
-
-            <div className="mt-6 flex justify-end">
-              <Button>Saqlash</Button>
-            </div>
           </div>
         </div>
       </DialogContent>

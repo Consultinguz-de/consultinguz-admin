@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Loader2, Plus } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,17 +19,53 @@ import { Label } from "@/components/ui/label";
 export function AddDirectionDialog() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const router = useRouter();
 
-  const handleSave = () => {
-    // TODO: Implement save logic
-    console.log("Yangi yo'nalish:", name);
+  const resetForm = () => {
     setName("");
     setOpen(false);
   };
 
-  const handleCancel = () => {
-    setName("");
-    setOpen(false);
+  const handleSubmit = async () => {
+    const title = name.trim();
+    if (!title) return;
+
+    setIsSaving(true);
+    try {
+      const res = await fetch("/api/directions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error("Yo'nalish saqlanmadi", {
+          description: data?.message || "Saqlashda xatolik yuz berdi.",
+        });
+        return;
+      }
+
+      toast.success("Yo'nalish qo'shildi", {
+        description: data?.direction?.title || title,
+      });
+      resetForm();
+      router.refresh();
+    } catch {
+      toast.error("Yo'nalish saqlanmadi", {
+        description: "Server bilan bog'lanishda xatolik.",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !isSaving && name.trim()) {
+      handleSubmit();
+    }
   };
 
   return (
@@ -53,15 +91,25 @@ export function AddDirectionDialog() {
               placeholder="Masalan: IT"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={isSaving}
+              autoFocus
             />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={handleCancel}>
+          <Button variant="outline" onClick={resetForm} disabled={isSaving}>
             Bekor qilish
           </Button>
-          <Button onClick={handleSave} disabled={!name.trim()}>
-            Saqlash
+          <Button onClick={handleSubmit} disabled={!name.trim() || isSaving}>
+            {isSaving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saqlanmoqda
+              </>
+            ) : (
+              "Saqlash"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

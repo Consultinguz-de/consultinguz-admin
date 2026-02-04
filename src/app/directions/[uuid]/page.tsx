@@ -1,15 +1,19 @@
 import { notFound } from "next/navigation";
-import { directions } from "@/data/directions";
+import { getDirectionByUuid } from "@/lib/directions";
+import { format } from "date-fns";
 
 interface DirectionPageProps {
   params: Promise<{
-    slug: string;
+    uuid: string;
   }>;
 }
 
-export default async function DirectionPage({ params }: DirectionPageProps) {
-  const { slug } = await params;
-  const direction = directions.find((d) => d.slug === slug);
+export const dynamic = "force-dynamic";
+
+export default async function DirectionPage(props: DirectionPageProps) {
+  const params = await props.params;
+  const { uuid } = params;
+  const direction = await getDirectionByUuid(uuid);
 
   if (!direction) {
     notFound();
@@ -19,7 +23,9 @@ export default async function DirectionPage({ params }: DirectionPageProps) {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold">{direction.title}</h1>
       <div className="mt-4 space-y-2 text-muted-foreground">
-        <p>Ochilgan sana: {direction.createdAt}</p>
+        <p>
+          Ochilgan sana: {format(new Date(direction.createdAt), "yyyy-MM-dd")}
+        </p>
         <p>Kim tomonidan: {direction.createdBy}</p>
       </div>
       <div className="mt-8">
@@ -30,10 +36,4 @@ export default async function DirectionPage({ params }: DirectionPageProps) {
       </div>
     </div>
   );
-}
-
-export async function generateStaticParams() {
-  return directions.map((direction) => ({
-    slug: direction.slug,
-  }));
 }
