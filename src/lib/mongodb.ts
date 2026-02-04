@@ -1,27 +1,48 @@
-import { MongoClient } from "mongodb";
+import { MongoClient, Db } from "mongodb";
 
-const connectionString = process.env.MONGODB_CONNECTION_STRING;
+const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_DB = process.env.MONGODB_DB;
 
-if (!connectionString) {
-  throw new Error("MONGODB_CONNECTION_STRING environment variable is not set");
+if (!MONGODB_URI) {
+  throw new Error("❌ Missing MONGODB_URI in environment variables");
 }
 
-const client = new MongoClient(connectionString);
+if (!MONGODB_DB) {
+  throw new Error("❌ Missing MONGODB_DB in environment variables");
+}
+
+// Global cache (Next.js dev / hot reload uchun)
+declare global {
+  // eslint-disable-next-line no-var
+  var _mongoClientPromise: Promise<MongoClient> | undefined;
+}
 
 let clientPromise: Promise<MongoClient>;
 
 if (process.env.NODE_ENV === "development") {
-  // In development, use a global variable to preserve the client across HMR
-  const globalWithMongo = global as typeof globalThis & {
-    _mongoClientPromise?: Promise<MongoClient>;
-  };
-
-  if (!globalWithMongo._mongoClientPromise) {
-    globalWithMongo._mongoClientPromise = client.connect();
+  // Development da global cache ishlatamiz (hot reload uchun)
+  if (!global._mongoClientPromise) {
+    const client = new MongoClient(MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000,
+      maxPoolSize: 10,
+    });
+    global._mongoClientPromise = client.connect();
   }
-  clientPromise = globalWithMongo._mongoClientPromise;
+  clientPromise = global._mongoClientPromise;
 } else {
+  // Production da har safar yangi client yaratamiz
+  const client = new MongoClient(MONGODB_URI, {
+    serverSelectionTimeoutMS: 5000,
+    maxPoolSize: 10,
+  });
   clientPromise = client.connect();
 }
 
+// Default export - users/route.ts uchun
 export default clientPromise;
+
+// Database olish uchun helper
+export async function getDb(): Promise<Db> {
+  const client = await clientPromise;
+  return client.db(MONGODB_DB);
+}

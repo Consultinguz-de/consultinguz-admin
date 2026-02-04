@@ -1,8 +1,12 @@
 import { AddDirectionDialog } from "@/components/add-direction-dialog";
 import { DirectionCard } from "@/components/direction-card";
-import { directions } from "@/data/directions";
+import { getDirections } from "@/lib/directions";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const directions = await getDirections();
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div>
@@ -17,11 +21,17 @@ export default function Home() {
           <h2 className="text-xl font-semibold">Yo'nalishlar</h2>
           <AddDirectionDialog />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {directions.map((direction) => (
-            <DirectionCard key={direction.id} direction={direction} />
-          ))}
-        </div>
+        {directions.length === 0 ? (
+          <div className="rounded-lg border border-dashed p-6 text-center text-muted-foreground">
+            Hozircha yo'nalishlar yo'q. Yangi yo'nalish qo'shing.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {directions.map((direction) => (
+              <DirectionCard key={direction.id} direction={direction} />
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );
