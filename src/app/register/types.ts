@@ -12,6 +12,7 @@ export interface PersonalInfo {
   phone: string;
   email: string;
   passport: string;
+  passportFile?: File;
   photo?: File;
   street: string;
   houseNumber: string;
@@ -61,7 +62,6 @@ export interface FormData {
   education: Education;
   languageSkills: LanguageSkill[];
   skills: string[];
-  documents: File[];
   privacyAccepted: boolean;
 }
 

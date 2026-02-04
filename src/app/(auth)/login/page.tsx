@@ -8,6 +8,8 @@ import {
 import { LoginForm } from "@/components/login-form";
 
 export default function LoginPage() {
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
@@ -18,7 +20,7 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <LoginForm />
+          <LoginForm turnstileSiteKey={siteKey} />
         </CardContent>
       </Card>
     </div>

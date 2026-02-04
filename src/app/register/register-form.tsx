@@ -8,7 +8,6 @@ import {
   EducationStep,
   LanguageSkillsStep,
   SkillsStep,
-  DocumentsStep,
   ConfirmationStep,
 } from "./steps";
 import { useRegister, STEPS } from "./register-context";
@@ -19,7 +18,6 @@ const STEP_COMPONENTS = [
   EducationStep,
   LanguageSkillsStep,
   SkillsStep,
-  DocumentsStep,
   ConfirmationStep,
 ];
 

@@ -46,6 +46,9 @@ export const validatePersonalInfo = (
   if (!personalInfo.photo) {
     errors.photo = "Rasm yuklanishi shart";
   }
+  if (!personalInfo.passportFile) {
+    errors.passportFile = "Passport nusxasi yuklanishi shart";
+  }
   if (!personalInfo.street.trim()) {
     errors.street = "Ko'cha kiritilishi shart";
   }
