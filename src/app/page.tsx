@@ -1,5 +1,5 @@
 import { AddDirectionDialog } from "@/components/add-direction-dialog";
-import { DirectionCard } from "@/components/direction-card";
+import { DirectionsTable } from "@/components/directions-table";
 import { getDirections } from "@/lib/directions";
 
 export const dynamic = "force-dynamic";
@@ -26,11 +26,7 @@ export default async function Home() {
             Hozircha yo'nalishlar yo'q. Yangi yo'nalish qo'shing.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {directions.map((direction) => (
-              <DirectionCard key={direction.id} direction={direction} />
-            ))}
-          </div>
+          <DirectionsTable directions={directions} />
         )}
       </section>
     </div>

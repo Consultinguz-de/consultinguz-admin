@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getDirectionByUuid } from "@/lib/directions";
 import { format } from "date-fns";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 
 interface DirectionPageProps {
   params: Promise<{
@@ -21,6 +22,13 @@ export default async function DirectionPage(props: DirectionPageProps) {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <Breadcrumbs
+        className="mb-4"
+        items={[
+          { label: "Bosh sahifa", href: "/" },
+          { label: direction.title },
+        ]}
+      />
       <h1 className="text-3xl font-bold">{direction.title}</h1>
       <div className="mt-4 space-y-2 text-muted-foreground">
         <p>
