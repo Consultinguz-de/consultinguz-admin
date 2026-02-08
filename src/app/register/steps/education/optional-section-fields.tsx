@@ -12,6 +12,11 @@ import {
   type OptionalFieldValue,
   type OptionalType,
 } from "./optional-section.types";
+import {
+  MAX_PDF_SIZE_BYTES,
+  PDF_SIZE_ERROR,
+  isFileTooLarge,
+} from "../../utils/file-constraints";
 
 interface OptionalSectionFieldsProps {
   type: OptionalType;
@@ -19,6 +24,7 @@ interface OptionalSectionFieldsProps {
   errors: FormErrors;
   onFieldChange: (field: keyof EducationData, value: OptionalFieldValue) => void;
   onClearError?: (field: string) => void;
+  onFileError?: (field: string, message: string) => void;
 }
 
 export function OptionalSectionFields({
@@ -27,6 +33,7 @@ export function OptionalSectionFields({
   errors,
   onFieldChange,
   onClearError,
+  onFileError,
 }: OptionalSectionFieldsProps) {
   const fieldKey = (field: keyof EducationData) => `${type}_${field}`;
   const fieldError = (field: keyof EducationData) => errors[fieldKey(field)];
@@ -142,6 +149,15 @@ export function OptionalSectionFields({
             disabled={!data.enabled}
             onChange={(e) => {
               const file = e.target.files?.[0];
+              if (!file) {
+                onFieldChange("document", undefined);
+                return;
+              }
+              if (isFileTooLarge(file, MAX_PDF_SIZE_BYTES)) {
+                onFileError?.(fieldKey("document"), PDF_SIZE_ERROR);
+                e.currentTarget.value = "";
+                return;
+              }
               onFieldChange("document", file);
             }}
             className={

@@ -1,5 +1,10 @@
 import { type LanguageSkill, type FormErrors } from "../types";
 import { type ValidationResult } from "./types";
+import {
+  MAX_PDF_SIZE_BYTES,
+  PDF_SIZE_ERROR,
+  isFileTooLarge,
+} from "../utils/file-constraints";
 
 export interface LanguageSkillsValidationResult extends ValidationResult {
   cleanedSkills?: LanguageSkill[];
@@ -7,54 +12,48 @@ export interface LanguageSkillsValidationResult extends ValidationResult {
 }
 
 const isEmptySkill = (skill: LanguageSkill): boolean =>
-  !skill.language &&
-  !skill.level &&
-  !skill.noCertificate &&
-  !skill.certificate;
+  !skill.language && !skill.level && !skill.noCertificate && !skill.certificate;
 
-export const validateLanguageSkills = (
-  skills: LanguageSkill[],
-): LanguageSkillsValidationResult => {
+const validateSkillFields = (skill: LanguageSkill): FormErrors => {
   const errors: FormErrors = {};
-  const nonEmptySkills = skills.filter((skill) => !isEmptySkill(skill));
 
-  // Validate each non-empty skill
-  nonEmptySkills.forEach((skill) => {
-    if (!skill.language) {
-      errors[`language_${skill.id}_language`] = "Til tanlanishi shart";
-    }
-    if (!skill.level) {
-      errors[`language_${skill.id}_level`] = "Til darajasi kiritilishi shart";
-    }
-    const requiresCertificate =
-      skill.language === "german" || skill.language === "english";
-    if (requiresCertificate && !skill.noCertificate && !skill.certificate) {
-      errors[`language_${skill.id}_certificate`] =
-        "Sertifikat yuklash yoki 'yo'q' ni belgilang";
-    }
-  });
-
-  const errorKeys = Object.keys(errors);
-  if (errorKeys.length > 0) {
-    return {
-      isValid: false,
-      errors,
-      firstErrorField: errorKeys[0],
-      cleanedSkills:
-        nonEmptySkills.length !== skills.length ? nonEmptySkills : undefined,
-    };
+  if (!skill.language) {
+    errors[`language_${skill.id}_language`] = "Til tanlanishi shart";
+  }
+  if (!skill.level) {
+    errors[`language_${skill.id}_level`] = "Til darajasi kiritilishi shart";
   }
 
-  // Check if German language is added and complete
+  const requiresCertificate =
+    skill.language === "german" || skill.language === "english";
+  if (requiresCertificate && !skill.noCertificate && !skill.certificate) {
+    errors[`language_${skill.id}_certificate`] =
+      "Sertifikat yuklash yoki 'yo'q' ni belgilang";
+  }
+  if (
+    skill.certificate &&
+    isFileTooLarge(skill.certificate, MAX_PDF_SIZE_BYTES)
+  ) {
+    errors[`language_${skill.id}_certificate`] = PDF_SIZE_ERROR;
+  }
+
+  return errors;
+};
+
+const validateGermanSkill = (
+  skills: LanguageSkill[],
+  nonEmptySkills: LanguageSkill[],
+  skillsChanged: boolean,
+): LanguageSkillsValidationResult | null => {
   const germanSkill = skills.find((skill) => skill.language === "german");
+  const cleanedSkills = skillsChanged ? nonEmptySkills : undefined;
 
   if (!germanSkill) {
     return {
       isValid: false,
       errors: {},
       germanError: "not_added",
-      cleanedSkills:
-        nonEmptySkills.length !== skills.length ? nonEmptySkills : undefined,
+      cleanedSkills,
     };
   }
 
@@ -67,8 +66,7 @@ export const validateLanguageSkills = (
       },
       firstErrorField: `language_${germanSkill.id}_level`,
       germanError: "no_level",
-      cleanedSkills:
-        nonEmptySkills.length !== skills.length ? nonEmptySkills : undefined,
+      cleanedSkills,
     };
   }
 
@@ -81,15 +79,48 @@ export const validateLanguageSkills = (
       },
       firstErrorField: `language_${germanSkill.id}_certificate`,
       germanError: "no_certificate",
-      cleanedSkills:
-        nonEmptySkills.length !== skills.length ? nonEmptySkills : undefined,
+      cleanedSkills,
     };
+  }
+
+  return null;
+};
+
+export const validateLanguageSkills = (
+  skills: LanguageSkill[],
+): LanguageSkillsValidationResult => {
+  const nonEmptySkills = skills.filter((skill) => !isEmptySkill(skill));
+  const skillsChanged = nonEmptySkills.length !== skills.length;
+
+  // Validate each non-empty skill
+  const errors: FormErrors = {};
+  nonEmptySkills.forEach((skill) => {
+    Object.assign(errors, validateSkillFields(skill));
+  });
+
+  const errorKeys = Object.keys(errors);
+  if (errorKeys.length > 0) {
+    return {
+      isValid: false,
+      errors,
+      firstErrorField: errorKeys[0],
+      cleanedSkills: skillsChanged ? nonEmptySkills : undefined,
+    };
+  }
+
+  // Check German language requirement
+  const germanValidation = validateGermanSkill(
+    skills,
+    nonEmptySkills,
+    skillsChanged,
+  );
+  if (germanValidation) {
+    return germanValidation;
   }
 
   return {
     isValid: true,
     errors: {},
-    cleanedSkills:
-      nonEmptySkills.length !== skills.length ? nonEmptySkills : undefined,
+    cleanedSkills: skillsChanged ? nonEmptySkills : undefined,
   };
 };

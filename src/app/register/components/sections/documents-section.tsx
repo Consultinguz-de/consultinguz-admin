@@ -6,9 +6,22 @@ import { Label } from "@/components/ui/label";
 import { FormField } from "../form-field";
 import { PassportInput } from "../passport-input";
 import { useRegister, type PersonalInfo } from "../../register-context";
+import {
+  MAX_PDF_SIZE_BYTES,
+  MAX_PHOTO_SIZE_BYTES,
+  PDF_SIZE_ERROR,
+  PHOTO_SIZE_ERROR,
+  isFileTooLarge,
+} from "../../utils/file-constraints";
 
 export function DocumentsSection() {
-  const { formData, updateFormData, errors, clearFieldError } = useRegister();
+  const {
+    formData,
+    updateFormData,
+    errors,
+    clearFieldError,
+    setFieldError,
+  } = useRegister();
   const personalInfo = formData.personalInfo;
 
   const updatePersonalInfo = (
@@ -32,7 +45,19 @@ export function DocumentsSection() {
           label="Rasm"
           type="file"
           accept="image/*"
-          onFileChange={(file) => updatePersonalInfo("photo", file)}
+          onFileChange={(file) => {
+            if (!file) {
+              updatePersonalInfo("photo", undefined);
+              return;
+            }
+            if (file.size > MAX_PHOTO_SIZE_BYTES) {
+              setFieldError("photo", PHOTO_SIZE_ERROR);
+              updatePersonalInfo("photo", undefined);
+              return;
+            }
+            if (errors.photo) clearFieldError("photo");
+            updatePersonalInfo("photo", file);
+          }}
           error={errors.photo}
           onClearError={() => clearFieldError("photo")}
         />
@@ -71,7 +96,17 @@ export function DocumentsSection() {
             onChange={(e) => {
               if (errors.passportFile) clearFieldError("passportFile");
               const file = e.target.files?.[0];
-              if (file) updatePersonalInfo("passportFile", file);
+              if (!file) {
+                updatePersonalInfo("passportFile", undefined);
+                return;
+              }
+              if (isFileTooLarge(file, MAX_PDF_SIZE_BYTES)) {
+                setFieldError("passportFile", PDF_SIZE_ERROR);
+                updatePersonalInfo("passportFile", undefined);
+                e.currentTarget.value = "";
+                return;
+              }
+              updatePersonalInfo("passportFile", file);
             }}
           />
         )}

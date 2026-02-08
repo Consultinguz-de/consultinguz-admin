@@ -8,6 +8,11 @@ import { Label } from "@/components/ui/label";
 import { ResponsiveSelect } from "./responsive-select";
 import { type FormErrors } from "../../register-context";
 import { LanguageSkill, SelectOption, LEVELS } from "./types";
+import {
+  MAX_PDF_SIZE_BYTES,
+  PDF_SIZE_ERROR,
+  isFileTooLarge,
+} from "../../utils/file-constraints";
 
 interface SkillItemProps {
   skill: LanguageSkill;
@@ -20,6 +25,7 @@ interface SkillItemProps {
     value: string | File | boolean | undefined
   ) => void;
   errors?: FormErrors;
+  onFileError?: (field: string, message: string) => void;
 }
 
 export function SkillItem({
@@ -30,6 +36,7 @@ export function SkillItem({
   onRemove,
   onUpdate,
   errors = {},
+  onFileError,
 }: SkillItemProps) {
   const languageError = errors[`language_${skill.id}_language`];
   const levelError = errors[`language_${skill.id}_level`];
@@ -121,7 +128,19 @@ export function SkillItem({
                   }
                   onChange={(e) => {
                     const file = e.target.files?.[0];
-                    if (file) onUpdate("certificate", file);
+                    if (!file) {
+                      onUpdate("certificate", undefined);
+                      return;
+                    }
+                    if (isFileTooLarge(file, MAX_PDF_SIZE_BYTES)) {
+                      onFileError?.(
+                        `language_${skill.id}_certificate`,
+                        PDF_SIZE_ERROR,
+                      );
+                      e.currentTarget.value = "";
+                      return;
+                    }
+                    onUpdate("certificate", file);
                   }}
                 />
               )}
