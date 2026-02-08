@@ -20,4 +20,5 @@ export interface OptionalSectionProps {
   onUpdate: (field: keyof EducationData, value: OptionalFieldValue) => void;
   errors?: FormErrors;
   onClearError?: (field: string) => void;
+  onFileError?: (field: string, message: string) => void;
 }

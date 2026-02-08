@@ -8,7 +8,13 @@ import { LANGUAGES, generateId } from "./types";
 import { useRegister, type LanguageSkill } from "../../register-context";
 
 export function LanguageSkillsStep() {
-  const { formData, updateFormData, errors, clearFieldError } = useRegister();
+  const {
+    formData,
+    updateFormData,
+    errors,
+    clearFieldError,
+    setFieldError,
+  } = useRegister();
   const skills = formData.languageSkills;
 
   useEffect(() => {
@@ -116,6 +122,7 @@ export function LanguageSkillsStep() {
           onRemove={() => removeSkill(skill.id)}
           onUpdate={(field, value) => updateSkill(skill.id, field, value)}
           errors={errors}
+          onFileError={setFieldError}
         />
       ))}
 

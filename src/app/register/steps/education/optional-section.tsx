@@ -15,6 +15,7 @@ export function OptionalSection({
   onUpdate,
   errors = {},
   onClearError,
+  onFileError,
 }: OptionalSectionProps) {
   const handleUpdate: OptionalSectionProps["onUpdate"] = (field, value) => {
     if (errors[`${type}_${field}`]) onClearError?.(`${type}_${field}`);
@@ -46,6 +47,7 @@ export function OptionalSection({
           errors={errors}
           onFieldChange={handleUpdate}
           onClearError={onClearError}
+          onFileError={onFileError}
         />
       </CollapsibleContent>
     </Collapsible>

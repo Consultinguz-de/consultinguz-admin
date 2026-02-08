@@ -7,7 +7,13 @@ import { EducationData } from "./types";
 import { useRegister, type Education } from "../../register-context";
 
 export function EducationStep() {
-  const { formData, updateFormData, errors, clearFieldError } = useRegister();
+  const {
+    formData,
+    updateFormData,
+    errors,
+    clearFieldError,
+    setFieldError,
+  } = useRegister();
   const education = formData.education;
 
   const [openSections, setOpenSections] = useState({
@@ -52,6 +58,7 @@ export function EducationStep() {
           onUpdate={(field, value) => updateEducation("school", field, value)}
           errors={errors}
           onClearError={clearFieldError}
+          onFileError={setFieldError}
         />
         <OptionalSection
           type="college"
@@ -65,6 +72,7 @@ export function EducationStep() {
           onUpdate={(field, value) => updateEducation("college", field, value)}
           errors={errors}
           onClearError={clearFieldError}
+          onFileError={setFieldError}
         />
         <OptionalSection
           type="university"
@@ -80,6 +88,7 @@ export function EducationStep() {
           }
           errors={errors}
           onClearError={clearFieldError}
+          onFileError={setFieldError}
         />
       </div>
     </div>

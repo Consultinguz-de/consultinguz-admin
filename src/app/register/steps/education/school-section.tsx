@@ -12,6 +12,11 @@ import { cn } from "@/lib/utils";
 import { EducationData } from "./types";
 import { Label } from "@/components/ui/label";
 import { type FormErrors } from "../../register-context";
+import {
+  MAX_PDF_SIZE_BYTES,
+  PDF_SIZE_ERROR,
+  isFileTooLarge,
+} from "../../utils/file-constraints";
 
 interface SchoolSectionProps {
   data: EducationData;
@@ -23,6 +28,7 @@ interface SchoolSectionProps {
   ) => void;
   errors?: FormErrors;
   onClearError?: (field: string) => void;
+  onFileError?: (field: string, message: string) => void;
 }
 
 export function SchoolSection({
@@ -32,6 +38,7 @@ export function SchoolSection({
   onUpdate,
   errors = {},
   onClearError,
+  onFileError,
 }: SchoolSectionProps) {
   const handleUpdate = (
     field: keyof EducationData,
@@ -137,6 +144,15 @@ export function SchoolSection({
                 accept=".pdf"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
+                  if (!file) {
+                    handleUpdate("document", undefined);
+                    return;
+                  }
+                  if (isFileTooLarge(file, MAX_PDF_SIZE_BYTES)) {
+                    onFileError?.("school_document", PDF_SIZE_ERROR);
+                    e.currentTarget.value = "";
+                    return;
+                  }
                   handleUpdate("document", file);
                 }}
                 className={

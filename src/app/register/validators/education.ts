@@ -1,11 +1,23 @@
-import { type Education, type FormErrors } from "../types";
+import { type Education, type EducationData, type FormErrors } from "../types";
 import { type ValidationResult } from "./types";
+import {
+  MAX_PDF_SIZE_BYTES,
+  PDF_SIZE_ERROR,
+  isFileTooLarge,
+} from "../utils/file-constraints";
 
-export const validateEducation = (education: Education): ValidationResult => {
+const hasPartialData = (data: EducationData): boolean =>
+  !!(
+    data.startDate ||
+    data.endDate ||
+    data.institutionName.trim() ||
+    data.direction.trim() ||
+    data.document
+  );
+
+const validateSchool = (school: EducationData): FormErrors => {
   const errors: FormErrors = {};
-  const { school, college, university } = education;
 
-  // School validation (required)
   if (!school.startDate) {
     errors.school_startDate = "Boshlangan sana kiritilishi shart";
   }
@@ -17,63 +29,54 @@ export const validateEducation = (education: Education): ValidationResult => {
   }
   if (!school.document) {
     errors.school_document = "Maktab shahodatnomasi yuklanishi shart";
+  } else if (isFileTooLarge(school.document, MAX_PDF_SIZE_BYTES)) {
+    errors.school_document = PDF_SIZE_ERROR;
   }
 
-  // College validation (only if has partial data)
-  if (college.enabled) {
-    const hasCollegeData =
-      college.startDate ||
-      college.endDate ||
-      college.institutionName.trim() ||
-      college.direction.trim() ||
-      college.document;
+  return errors;
+};
 
-    if (hasCollegeData) {
-      if (!college.startDate) {
-        errors.college_startDate = "Boshlangan sana kiritilishi shart";
-      }
-      if (!college.endDate) {
-        errors.college_endDate = "Tugatilgan sana kiritilishi shart";
-      }
-      if (!college.institutionName.trim()) {
-        errors.college_institutionName = "Kollej nomi kiritilishi shart";
-      }
-      if (!college.direction.trim()) {
-        errors.college_direction = "Yo'nalish kiritilishi shart";
-      }
-      if (!college.document) {
-        errors.college_document = "Diplom yuklanishi shart";
-      }
-    }
+const validateOptionalSection = (
+  data: EducationData,
+  prefix: "college" | "university",
+  institutionLabel: string,
+): FormErrors => {
+  const errors: FormErrors = {};
+
+  if (!data.enabled || !hasPartialData(data)) {
+    return errors;
   }
 
-  // University validation (only if has partial data)
-  if (university.enabled) {
-    const hasUniversityData =
-      university.startDate ||
-      university.endDate ||
-      university.institutionName.trim() ||
-      university.direction.trim() ||
-      university.document;
-
-    if (hasUniversityData) {
-      if (!university.startDate) {
-        errors.university_startDate = "Boshlangan sana kiritilishi shart";
-      }
-      if (!university.endDate) {
-        errors.university_endDate = "Tugatilgan sana kiritilishi shart";
-      }
-      if (!university.institutionName.trim()) {
-        errors.university_institutionName = "Universitet nomi kiritilishi shart";
-      }
-      if (!university.direction.trim()) {
-        errors.university_direction = "Yo'nalish kiritilishi shart";
-      }
-      if (!university.document) {
-        errors.university_document = "Diplom yuklanishi shart";
-      }
-    }
+  if (!data.startDate) {
+    errors[`${prefix}_startDate`] = "Boshlangan sana kiritilishi shart";
   }
+  if (!data.endDate) {
+    errors[`${prefix}_endDate`] = "Tugatilgan sana kiritilishi shart";
+  }
+  if (!data.institutionName.trim()) {
+    errors[`${prefix}_institutionName`] =
+      `${institutionLabel} nomi kiritilishi shart`;
+  }
+  if (!data.direction.trim()) {
+    errors[`${prefix}_direction`] = "Yo'nalish kiritilishi shart";
+  }
+  if (!data.document) {
+    errors[`${prefix}_document`] = "Diplom yuklanishi shart";
+  } else if (isFileTooLarge(data.document, MAX_PDF_SIZE_BYTES)) {
+    errors[`${prefix}_document`] = PDF_SIZE_ERROR;
+  }
+
+  return errors;
+};
+
+export const validateEducation = (education: Education): ValidationResult => {
+  const { school, college, university } = education;
+
+  const errors: FormErrors = {
+    ...validateSchool(school),
+    ...validateOptionalSection(college, "college", "Kollej"),
+    ...validateOptionalSection(university, "university", "Universitet"),
+  };
 
   const errorKeys = Object.keys(errors);
   return {
