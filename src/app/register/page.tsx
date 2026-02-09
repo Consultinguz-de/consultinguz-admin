@@ -11,15 +11,39 @@ import { RegisterResult } from "./register-result";
 import { MobileResultFab } from "./mobile-result-fab";
 import { RegisterProvider } from "./register-context";
 import { RegisterHeader } from "./register-header";
+import RegisterNotFound from "./not-found";
+import { getDirectionByUuid } from "@/lib/directions";
 
 export const metadata: Metadata = {
   title: "Ro'yxatdan o'tish",
   description: "Consulting Pro - Ro'yxatdan o'tish sahifasi",
 };
 
-export default function RegisterPage() {
+export const dynamic = "force-dynamic";
+
+interface RegisterPageProps {
+  searchParams: Promise<{
+    directionId?: string | string[];
+  }>;
+}
+
+export default async function RegisterPage({
+  searchParams,
+}: RegisterPageProps) {
+  const { directionId } = await searchParams;
+
+  if (typeof directionId !== "string" || directionId.trim().length === 0) {
+    return <RegisterNotFound />;
+  }
+
+  const direction = await getDirectionByUuid(directionId);
+
+  if (!direction) {
+    return <RegisterNotFound />;
+  }
+
   return (
-    <RegisterProvider>
+    <RegisterProvider directionTitle={direction.title}>
       <div className="h-screen flex bg-background p-2 md:p-4 overflow-hidden">
         <div className="w-full h-full grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-6">
           {/* Form Section */}

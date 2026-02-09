@@ -76,6 +76,7 @@ export interface RegisterContextType {
   setCurrentStep: (step: number) => void;
   currentStepTitle: string;
   currentStepDescription: string;
+  directionTitle?: string;
   formData: FormData;
   updateFormData: <K extends keyof FormData>(
     key: K,

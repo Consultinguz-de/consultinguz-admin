@@ -30,7 +30,13 @@ const RegisterContext = createContext<RegisterContextType | undefined>(
   undefined,
 );
 
-export function RegisterProvider({ children }: { children: ReactNode }) {
+export function RegisterProvider({
+  children,
+  directionTitle,
+}: {
+  children: ReactNode;
+  directionTitle?: string;
+}) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -158,6 +164,7 @@ export function RegisterProvider({ children }: { children: ReactNode }) {
         setCurrentStep,
         currentStepTitle,
         currentStepDescription,
+        directionTitle,
         formData,
         updateFormData,
         errors,
