@@ -24,22 +24,46 @@ export const dynamic = "force-dynamic";
 interface RegisterPageProps {
   searchParams: Promise<{
     directionId?: string | string[];
+    lead?: string | string[];
   }>;
 }
 
 export default async function RegisterPage({
   searchParams,
 }: RegisterPageProps) {
-  const { directionId } = await searchParams;
+  const { directionId, lead } = await searchParams;
 
   if (typeof directionId !== "string" || directionId.trim().length === 0) {
-    return <RegisterNotFound />;
+    return (
+      <RegisterNotFound message="Yo'nalish topilmadi yoki link noto'g'ri." />
+    );
   }
 
   const direction = await getDirectionByUuid(directionId);
 
   if (!direction) {
-    return <RegisterNotFound />;
+    return (
+      <RegisterNotFound message="Yo'nalish topilmadi yoki link noto'g'ri." />
+    );
+  }
+  if (direction.linkActive === false) {
+    return (
+      <RegisterNotFound message="Ro'yxatdan o'tish havolasi o'chirilgan." />
+    );
+  }
+
+  if (typeof lead === "string" && lead.trim().length > 0) {
+    const leadEntry = direction.leadLinks?.find(
+      (item) => item.name === lead.trim(),
+    );
+    if (!leadEntry) {
+      return <RegisterNotFound message="Lead topilmadi yoki link noto'g'ri." />;
+    }
+    if (leadEntry.active === false) {
+      return <RegisterNotFound message="Ushbu lead havolasi o'chirilgan." />;
+    }
+  } else if (Array.isArray(lead)) {
+    return <RegisterNotFound message="Lead parametri noto'g'ri formatda." />;
   }
 
   return (
