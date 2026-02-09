@@ -94,14 +94,7 @@ export function DirectionSettingsDialog({
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-auto p-6">
-            {renderTabContent()}
-            {activeTab !== "delete" && (
-              <div className="mt-6 flex justify-end">
-                <Button>Saqlash</Button>
-              </div>
-            )}
-          </div>
+          <div className="flex-1 overflow-auto p-6">{renderTabContent()}</div>
         </div>
       </DialogContent>
     </Dialog>
