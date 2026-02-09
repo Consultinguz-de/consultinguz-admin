@@ -11,13 +11,23 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Switch } from "@/components/ui/switch";
 
 interface RegisterLinkProps {
   directionId: string;
   registerLink: string;
+  linkActive: boolean;
+  isUpdatingLink: boolean;
+  onToggleLink: (checked: boolean) => void;
 }
 
-export function RegisterLink({ directionId, registerLink }: RegisterLinkProps) {
+export function RegisterLink({
+  directionId,
+  registerLink,
+  linkActive,
+  isUpdatingLink,
+  onToggleLink,
+}: RegisterLinkProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -37,6 +47,7 @@ export function RegisterLink({ directionId, registerLink }: RegisterLinkProps) {
             id={`register-link-${directionId}`}
             value={registerLink}
             readOnly
+            disabled={!linkActive}
           />
           <Tooltip>
             <TooltipTrigger asChild>
@@ -45,6 +56,7 @@ export function RegisterLink({ directionId, registerLink }: RegisterLinkProps) {
                 variant="outline"
                 onClick={handleCopy}
                 className="shrink-0"
+                disabled={!linkActive}
               >
                 {copied ? (
                   <Check className="h-3 w-3" />
@@ -54,10 +66,26 @@ export function RegisterLink({ directionId, registerLink }: RegisterLinkProps) {
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              {copied ? "Nusxa olindi" : "Linkni nusxalash"}
+              {!linkActive
+                ? "Link o'chirilgan"
+                : copied
+                  ? "Nusxa olindi"
+                  : "Linkni nusxalash"}
             </TooltipContent>
           </Tooltip>
+          <Switch
+            checked={linkActive}
+            disabled={isUpdatingLink}
+            onCheckedChange={onToggleLink}
+            aria-label="Asosiy link aktivligi"
+            className="self-center"
+          />
         </div>
+        {!linkActive ? (
+          <p className="text-xs text-muted-foreground">
+            Link o'chirilgan, nusxa olish o'chirilgan.
+          </p>
+        ) : null}
       </div>
     </TooltipProvider>
   );

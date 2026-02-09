@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
+import { useRouter } from "next/navigation";
 import { Direction, DirectionLeadLink } from "@/types/direction";
 import { AddLeadForm } from "./add-lead-form";
 import { LeadLinkItem } from "./lead-link-item";
@@ -15,17 +17,49 @@ export function LinksTab({ direction }: LinksTabProps) {
   const [leadLinks, setLeadLinks] = useState<DirectionLeadLink[]>(
     direction.leadLinks || [],
   );
+  const [linkActive, setLinkActive] = useState(
+    direction.linkActive ?? true,
+  );
+  const [isUpdatingLink, setIsUpdatingLink] = useState(false);
+  const router = useRouter();
 
   const registerLink = useMemo(
     () => `http://localhost:3000/register?directionId=${direction.id}`,
     [direction.id],
   );
+  const directionKey = direction.uuid || direction.id;
 
   const handleLeadAdded = (lead: DirectionLeadLink) => {
     setLeadLinks((prev) => [lead, ...prev]);
   };
   const handleLeadDeleted = (leadId: string) => {
     setLeadLinks((prev) => prev.filter((lead) => lead.id !== leadId));
+  };
+  const updateDirectionSettings = async (
+    payload: Record<string, unknown>,
+    onError: () => void,
+  ) => {
+    try {
+      const res = await fetch(`/api/directions/${directionKey}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error("Sozlamalar saqlanmadi", {
+          description: data?.message || "Saqlashda xatolik yuz berdi.",
+        });
+        onError();
+        return;
+      }
+      router.refresh();
+    } catch {
+      toast.error("Sozlamalar saqlanmadi", {
+        description: "Server bilan bog'lanishda xatolik.",
+      });
+      onError();
+    }
   };
 
   return (
@@ -37,7 +71,21 @@ export function LinksTab({ direction }: LinksTabProps) {
         </p>
       </div>
 
-      <RegisterLink directionId={direction.id} registerLink={registerLink} />
+      <RegisterLink
+        directionId={direction.id}
+        registerLink={registerLink}
+        linkActive={linkActive}
+        isUpdatingLink={isUpdatingLink}
+        onToggleLink={(checked) => {
+          const prev = linkActive;
+          setLinkActive(checked);
+          setIsUpdatingLink(true);
+          updateDirectionSettings(
+            { linkActive: checked },
+            () => setLinkActive(prev),
+          ).finally(() => setIsUpdatingLink(false));
+        }}
+      />
 
       <AddLeadForm
         directionId={direction.id}
@@ -55,9 +103,17 @@ export function LinksTab({ direction }: LinksTabProps) {
                 key={lead.id}
                 lead={lead}
                 registerLink={registerLink}
+                linkActive={linkActive}
                 directionId={direction.id}
                 directionUuid={direction.uuid}
                 onLeadDeleted={handleLeadDeleted}
+                onLeadActiveChange={(leadId, active) => {
+                  setLeadLinks((prev) =>
+                    prev.map((item) =>
+                      item.id === leadId ? { ...item, active } : item,
+                    ),
+                  );
+                }}
               />
             ))}
           </div>

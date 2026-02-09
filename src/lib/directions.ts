@@ -39,7 +39,9 @@ export async function getDirectionBySlug(slug: string) {
   };
 }
 
-export async function getDirectionByUuid(uuid: string) {
+export async function getDirectionByUuid(
+  uuid: string,
+): Promise<Direction | null> {
   const db = await getDb();
 
   const item = await db.collection<Direction>(COLLECTION).findOne({
