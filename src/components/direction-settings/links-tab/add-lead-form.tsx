@@ -11,12 +11,14 @@ import { DirectionLeadLink } from "@/types/direction";
 interface AddLeadFormProps {
   directionId: string;
   directionUuid: string;
+  existingLeadNames: string[];
   onLeadAdded: (lead: DirectionLeadLink) => void;
 }
 
 export function AddLeadForm({
   directionId,
   directionUuid,
+  existingLeadNames,
   onLeadAdded,
 }: AddLeadFormProps) {
   const [leadName, setLeadName] = useState("");
@@ -27,6 +29,14 @@ export function AddLeadForm({
     const trimmedLead = leadName.trim();
     if (!trimmedLead) {
       toast.error("Lead nomi kiritilmagan");
+      return;
+    }
+    const normalizedLead = trimmedLead.toLowerCase();
+    const hasDuplicate = existingLeadNames.some(
+      (name) => name.toLowerCase() === normalizedLead,
+    );
+    if (hasDuplicate) {
+      toast.error("Bu lead allaqachon qo'shilgan");
       return;
     }
 

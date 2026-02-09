@@ -42,6 +42,7 @@ export function LinksTab({ direction }: LinksTabProps) {
       <AddLeadForm
         directionId={direction.id}
         directionUuid={direction.uuid}
+        existingLeadNames={leadLinks.map((lead) => lead.name)}
         onLeadAdded={handleLeadAdded}
       />
 
