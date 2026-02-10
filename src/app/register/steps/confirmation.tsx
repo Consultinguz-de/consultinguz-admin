@@ -16,7 +16,7 @@ import { PrivacyPolicyContent } from "./privacy-policy-content";
 import { useRegister } from "../register-context";
 
 export function ConfirmationStep() {
-  const { formData, updateFormData, submitForm } = useRegister();
+  const { formData, updateFormData, submitForm, isSubmitting } = useRegister();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [resetTurnstile, setResetTurnstile] = useState<(() => void) | null>(
@@ -80,7 +80,7 @@ export function ConfirmationStep() {
       <Button
         type="button"
         className="w-full mt-4"
-        disabled={!formData.privacyAccepted || !turnstileToken}
+        disabled={!formData.privacyAccepted || !turnstileToken || isSubmitting}
         onClick={async () => {
           const verifyResponse = await fetch("/api/turnstile/register", {
             method: "POST",
@@ -96,10 +96,10 @@ export function ConfirmationStep() {
             resetTurnstile?.();
             return;
           }
-          submitForm();
+          await submitForm();
         }}
       >
-        Jo'natish
+        {isSubmitting ? "Yuborilmoqda..." : "Jo'natish"}
       </Button>
     </div>
   );

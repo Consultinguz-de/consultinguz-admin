@@ -19,7 +19,7 @@ export default async function Home() {
       <section className="mt-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">Yo'nalishlar</h2>
-          <AddDirectionDialog />
+          <AddDirectionDialog directions={directions} />
         </div>
         {directions.length === 0 ? (
           <div className="rounded-lg border border-dashed p-6 text-center text-muted-foreground">

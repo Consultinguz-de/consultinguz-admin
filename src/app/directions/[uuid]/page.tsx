@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getDirectionByUuid } from "@/lib/directions";
 import { format } from "date-fns";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { CandidatesList } from "./candidates-list";
 
 interface DirectionPageProps {
   params: Promise<{
@@ -41,6 +42,10 @@ export default async function DirectionPage(props: DirectionPageProps) {
           Bu {direction.title} yo'nalishi sahifasi. Bu yerda yo'nalishga oid
           barcha ma'lumotlar ko'rsatiladi.
         </p>
+        <div className="mt-6">
+          <h2 className="text-xl font-semibold">Nomzodlar</h2>
+          <CandidatesList directionId={direction.uuid} />
+        </div>
       </div>
     </div>
   );
