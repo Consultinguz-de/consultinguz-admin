@@ -77,6 +77,8 @@ export interface RegisterContextType {
   currentStepTitle: string;
   currentStepDescription: string;
   directionTitle?: string;
+  directionId?: string;
+  leadName?: string;
   formData: FormData;
   updateFormData: <K extends keyof FormData>(
     key: K,
@@ -87,7 +89,8 @@ export interface RegisterContextType {
   clearFieldError: (field: string) => void;
   clearAllErrors: () => void;
   validateCurrentStep: () => boolean;
-  submitForm: () => void;
+  submitForm: () => Promise<void>;
+  isSubmitting: boolean;
 }
 
 // Step Type

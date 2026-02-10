@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -15,8 +15,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { slugify } from "@/lib/slugify";
+import type { Direction } from "@/types/direction";
 
-export function AddDirectionDialog() {
+type AddDirectionDialogProps = {
+  directions: Direction[];
+};
+
+export function AddDirectionDialog({ directions }: AddDirectionDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -30,6 +36,15 @@ export function AddDirectionDialog() {
   const handleSubmit = async () => {
     const title = name.trim();
     if (!title) return;
+
+    const slug = slugify(title);
+    const duplicate = directions.find((direction) => direction.slug === slug);
+    if (duplicate) {
+      toast.warning("Bu yo'nalish allaqachon mavjud", {
+        description: duplicate.title,
+      });
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -68,6 +83,13 @@ export function AddDirectionDialog() {
     }
   };
 
+  const duplicateDirection = useMemo(() => {
+    const title = name.trim();
+    if (!title) return null;
+    const slug = slugify(title);
+    return directions.find((direction) => direction.slug === slug) ?? null;
+  }, [directions, name]);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -88,13 +110,18 @@ export function AddDirectionDialog() {
             <Label htmlFor="direction-name">Yo'nalish nomi</Label>
             <Input
               id="direction-name"
-              placeholder="Masalan: IT"
+              placeholder="Masalan: Straßenbau Fachkräfte"
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={handleKeyDown}
               disabled={isSaving}
               autoFocus
             />
+            {duplicateDirection ? (
+              <p className="text-sm text-amber-600">
+                Bu yo'nalish allaqachon mavjud: {duplicateDirection.title}
+              </p>
+            ) : null}
           </div>
         </div>
         <DialogFooter>

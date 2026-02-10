@@ -66,8 +66,14 @@ export default async function RegisterPage({
     return <RegisterNotFound message="Lead parametri noto'g'ri formatda." />;
   }
 
+  const leadName = typeof lead === "string" ? lead.trim() : undefined;
+
   return (
-    <RegisterProvider directionTitle={direction.title}>
+    <RegisterProvider
+      directionTitle={direction.title}
+      directionId={directionId}
+      leadName={leadName}
+    >
       <div className="h-screen flex bg-background p-2 md:p-4 overflow-hidden">
         <div className="w-full h-full grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-6">
           {/* Form Section */}
