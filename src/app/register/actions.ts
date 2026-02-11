@@ -1,6 +1,10 @@
 "use server";
 
 import { getDb } from "@/lib/mongodb";
+import {
+  incrementDirectionCandidatesCount,
+  directionExists,
+} from "@/lib/candidates";
 
 interface FileUpload {
   url: string;
@@ -76,6 +80,19 @@ export async function submitCandidate(payload: CandidatePayload): Promise<{
   error?: string;
 }> {
   try {
+    const { directionId } = payload;
+
+    // Validate direction exists before creating candidate
+    if (directionId) {
+      const exists = await directionExists(directionId);
+      if (!exists) {
+        return {
+          success: false,
+          error: "Direction not found",
+        };
+      }
+    }
+
     const db = await getDb();
     const candidatesCollection = db.collection("candidates");
 
@@ -83,6 +100,16 @@ export async function submitCandidate(payload: CandidatePayload): Promise<{
       ...payload,
       createdAt: new Date(),
     });
+
+    // Increment candidatesCount in the direction document
+    if (directionId) {
+      const incremented = await incrementDirectionCandidatesCount(directionId);
+      if (!incremented) {
+        console.warn(
+          `Failed to increment candidatesCount for direction: ${directionId}`,
+        );
+      }
+    }
 
     return {
       success: true,

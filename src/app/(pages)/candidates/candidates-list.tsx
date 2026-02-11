@@ -3,19 +3,15 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import {
-  getCandidatesByDirection,
-  type CandidateListItem,
-  type PaginatedCandidates,
-} from "./actions";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CandidatesTable } from "./candidates-table";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { getAllCandidates, type PaginatedCandidates } from "./actions";
 
 const ITEMS_PER_PAGE = 10;
 
-export function CandidatesList({ directionId }: { directionId: string }) {
+export function CandidatesList() {
   const [data, setData] = useState<PaginatedCandidates>({
     items: [],
     total: 0,
@@ -32,11 +28,7 @@ export function CandidatesList({ directionId }: { directionId: string }) {
     setLoading(true);
     setError(null);
     try {
-      const result = await getCandidatesByDirection(
-        directionId,
-        page,
-        ITEMS_PER_PAGE,
-      );
+      const result = await getAllCandidates(page, ITEMS_PER_PAGE);
       setData(result);
     } catch (err: unknown) {
       const message =
@@ -49,9 +41,9 @@ export function CandidatesList({ directionId }: { directionId: string }) {
 
   useEffect(() => {
     loadPage(1);
-  }, [directionId]);
+  }, []);
 
-  if (loading) {
+  if (loading && data.items.length === 0) {
     return (
       <div className="mt-4 space-y-2">
         {Array.from({ length: 5 }).map((_, i) => (
@@ -67,9 +59,7 @@ export function CandidatesList({ directionId }: { directionId: string }) {
 
   if (data.items.length === 0) {
     return (
-      <p className="text-muted-foreground">
-        Hozircha ushbu yo'nalishda nomzodlar yo'q.
-      </p>
+      <p className="text-muted-foreground">Hozircha nomzodlar yo'q.</p>
     );
   }
 
@@ -112,7 +102,6 @@ export function CandidatesList({ directionId }: { directionId: string }) {
     <div className="space-y-4">
       <CandidatesTable
         items={data.items}
-        directionId={directionId}
         deletingId={deletingId}
         onDelete={handleDelete}
       />
