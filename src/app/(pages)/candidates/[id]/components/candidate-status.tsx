@@ -10,7 +10,7 @@ import {
   ThumbsDown,
   ThumbsUp,
 } from "lucide-react";
-import { updateCandidateStatus } from "../../actions";
+import { updateCandidateStatus } from "@/app/directions/[uuid]/actions";
 import { toast } from "sonner";
 
 interface CandidateStatusProps {

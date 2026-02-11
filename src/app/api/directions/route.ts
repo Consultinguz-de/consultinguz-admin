@@ -1,6 +1,19 @@
 import { NextResponse } from "next/server";
-import { buildDirection } from "@/lib/directions";
+import { buildDirection, getDirections } from "@/lib/directions";
 import { getDb } from "@/lib/mongodb";
+
+export async function GET() {
+  try {
+    const directions = await getDirections();
+    return NextResponse.json({ ok: true, directions });
+  } catch (error) {
+    console.error("Get directions error:", error);
+    return NextResponse.json(
+      { ok: false, message: "Server xatosi." },
+      { status: 500 },
+    );
+  }
+}
 
 export async function POST(request: Request) {
   try {
@@ -34,7 +47,11 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true, direction });
   } catch (error) {
-    if (error instanceof Error && "code" in error && (error as any).code === 11000) {
+    if (
+      error instanceof Error &&
+      "code" in error &&
+      (error as any).code === 11000
+    ) {
       return NextResponse.json(
         { ok: false, message: "Bunday yo'nalish (slug) allaqachon mavjud." },
         { status: 409 },

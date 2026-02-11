@@ -131,7 +131,8 @@ export function TurnstileWidget({
             setStatus("expired");
             onExpireRef.current?.();
           },
-          "error-callback": () => {
+          "error-callback": (errorCode: string) => {
+            console.error("Turnstile error:", errorCode);
             setStatus("error");
             onErrorRef.current?.();
           },
