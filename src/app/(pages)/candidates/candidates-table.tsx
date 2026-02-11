@@ -27,6 +27,7 @@ import type { CandidateListItem } from "./actions";
 
 interface CandidatesTableProps {
   items: CandidateListItem[];
+  startIndex: number;
   deletingId: string | null;
   onDelete: (candidateId: string, fullName: string) => void;
 }
@@ -198,6 +199,7 @@ function CandidateRow({
 
 export function CandidatesTable({
   items,
+  startIndex,
   deletingId,
   onDelete,
 }: CandidatesTableProps) {
@@ -227,7 +229,7 @@ export function CandidatesTable({
               <CandidateRow
                 key={item.id}
                 item={item}
-                index={index}
+                index={startIndex + index}
                 isDeleting={deletingId === item.id}
                 onDelete={onDelete}
               />

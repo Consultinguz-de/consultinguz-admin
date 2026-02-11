@@ -95,6 +95,7 @@ export function CandidatesList() {
   };
 
   const { page, totalPages, total } = data;
+  const startIndex = (page - 1) * ITEMS_PER_PAGE;
   const startItem = (page - 1) * ITEMS_PER_PAGE + 1;
   const endItem = Math.min(page * ITEMS_PER_PAGE, total);
 
@@ -102,6 +103,7 @@ export function CandidatesList() {
     <div className="space-y-4">
       <CandidatesTable
         items={data.items}
+        startIndex={startIndex}
         deletingId={deletingId}
         onDelete={handleDelete}
       />
