@@ -3,6 +3,23 @@
 import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 
+interface FileUpload {
+  url: string;
+  path: string;
+  name: string;
+  size: number;
+  contentType: string | null;
+}
+
+interface EducationEntry {
+  enabled: boolean;
+  startDate: string | null;
+  endDate: string | null;
+  institutionName: string;
+  direction: string;
+  document: FileUpload | null;
+}
+
 export interface CandidateListItem {
   id: string;
   fullName: string;
@@ -67,7 +84,37 @@ export interface CandidateDetail {
     phone?: string;
     email?: string;
     photo?: { url?: string | null };
+    gender?: string;
+    birthDate?: string | null;
+    birthPlace?: string;
+    maritalStatus?: string;
+    passport?: string;
+    street?: string;
+    houseNumber?: string;
+    region?: string;
+    country?: string;
   };
+  workExperience?: Array<{
+    id?: string;
+    startDate?: string | null;
+    endDate?: string | null;
+    position?: string;
+    employer?: string;
+    responsibilities?: string[];
+  }>;
+  education?: {
+    school?: EducationEntry;
+    college?: EducationEntry;
+    university?: EducationEntry;
+  };
+  languageSkills?: Array<{
+    id?: string;
+    language?: string;
+    level?: string;
+    noCertificate?: boolean;
+    certificate?: FileUpload | null;
+  }>;
+  skills?: string[];
   documentReady?: boolean | null;
   stage?: number | null;
   comment?: string | null;
@@ -91,6 +138,10 @@ export async function getCandidateById(
       id: doc._id.toString(),
       directionId: doc.directionId,
       personalInfo: doc.personalInfo,
+      workExperience: doc.workExperience,
+      education: doc.education,
+      languageSkills: doc.languageSkills,
+      skills: doc.skills,
       documentReady:
         typeof doc.documentReady === "boolean" ? doc.documentReady : null,
       stage: typeof doc.stage === "number" ? doc.stage : null,
@@ -135,6 +186,61 @@ export async function updateCandidateStatus(
     return { success: true };
   } catch (error) {
     console.error("Failed to update candidate:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+export async function updateCandidatePersonalInfo(
+  id: string,
+  updates: {
+    firstName?: string;
+    lastName?: string;
+    gender?: string;
+    birthDate?: string | null;
+    birthPlace?: string;
+    maritalStatus?: string;
+    phone?: string;
+    email?: string;
+    passport?: string;
+    street?: string;
+    houseNumber?: string;
+    region?: string;
+    country?: string;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  if (!ObjectId.isValid(id)) {
+    return { success: false, error: "Invalid candidate id" };
+  }
+  try {
+    const db = await getDb();
+    const candidatesCollection = db.collection("candidates");
+    const setFields: Record<string, unknown> = {};
+
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value !== undefined) {
+        setFields[`personalInfo.${key}`] = value;
+      }
+    });
+
+    if (Object.keys(setFields).length === 0) {
+      return { success: true };
+    }
+
+    await candidatesCollection.updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          ...setFields,
+          updatedAt: new Date(),
+        },
+      }
+    );
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update personal info:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",

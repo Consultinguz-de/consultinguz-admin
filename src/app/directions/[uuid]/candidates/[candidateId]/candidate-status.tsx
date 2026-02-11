@@ -6,6 +6,7 @@ import {
   FileText,
   FileCheck2,
   HelpCircle,
+  Pencil,
   ThumbsDown,
   ThumbsUp,
 } from "lucide-react";
@@ -16,6 +17,8 @@ interface CandidateStatusProps {
   candidateId: string;
   initialApproved: boolean | null | undefined;
   initialDocumentReady: boolean | null | undefined;
+  onEditClick?: () => void;
+  isEditing?: boolean;
 }
 
 function nextToggle(value: boolean | null | undefined) {
@@ -28,6 +31,8 @@ export function CandidateStatus({
   candidateId,
   initialApproved,
   initialDocumentReady,
+  onEditClick,
+  isEditing,
 }: CandidateStatusProps) {
   const [approved, setApproved] = useState<boolean | null | undefined>(
     initialApproved ?? null,
@@ -104,46 +109,56 @@ export function CandidateStatus({
 
   return (
     <div className="flex items-center gap-2">
-      <div className="flex flex-col items-center gap-1">
+      <Button
+        type="button"
+        size="icon"
+        variant="outline"
+        onClick={toggleApproved}
+        disabled={isPending}
+        className="h-9 w-9"
+        aria-label="Tasdiq holati"
+        title={
+          approved === true
+            ? "Tasdiqlangan"
+            : approved === false
+              ? "Rad etilgan"
+              : "Kutilmoqda"
+        }
+      >
+        {renderApproveIcon(approved)}
+      </Button>
+      <Button
+        type="button"
+        size="icon"
+        variant="outline"
+        onClick={toggleDocumentReady}
+        disabled={isPending}
+        className="h-9 w-9"
+        aria-label="Hujjat holati"
+        title={
+          documentReady === true
+            ? "Tayyor"
+            : documentReady === false
+              ? "Tayyor emas"
+              : "Noma'lum"
+        }
+      >
+        {renderDocumentIcon(documentReady)}
+      </Button>
+      {onEditClick && (
         <Button
           type="button"
           size="icon"
-          variant="outline"
-          onClick={toggleApproved}
+          variant={isEditing ? "default" : "outline"}
+          onClick={onEditClick}
           disabled={isPending}
           className="h-9 w-9"
-          aria-label="Tasdiq holati"
-          title={
-            approved === true
-              ? "Tasdiqlangan"
-              : approved === false
-                ? "Rad etilgan"
-                : "Kutilmoqda"
-          }
+          aria-label="Tahrirlash"
+          title="Tahrirlash"
         >
-          {renderApproveIcon(approved)}
+          <Pencil className="h-4 w-4" />
         </Button>
-      </div>
-      <div className="flex flex-col items-center gap-1">
-        <Button
-          type="button"
-          size="icon"
-          variant="outline"
-          onClick={toggleDocumentReady}
-          disabled={isPending}
-          className="h-9 w-9"
-          aria-label="Hujjat holati"
-          title={
-            documentReady === true
-              ? "Tayyor"
-              : documentReady === false
-                ? "Tayyor emas"
-                : "Noma'lum"
-          }
-        >
-          {renderDocumentIcon(documentReady)}
-        </Button>
-      </div>
+      )}
     </div>
   );
 }
